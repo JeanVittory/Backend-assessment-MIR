@@ -1,4 +1,5 @@
 import PrismaError from '../../config/errorsHandler/PrismaError.config';
+import encryptPassword from '../utils/passwordEncryption.utils';
 import { prismaErrorsCodes400, prismaErrorsCodes404 } from '../utils/prismaErrorsCode.utils';
 import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
 import { PrismaClient, Prisma } from '@prisma/client';
@@ -7,6 +8,26 @@ import { INewItem } from '../interfaces/NewItem.interface';
 import { createItemService } from './item.service';
 import { createFavService } from './fav.service';
 import { ICreateFavoriteResponse } from '../interfaces/CreateFavoriteResponse.interface';
+import { INewUser } from '../interfaces/NewUser.interface';
+
+export const createUser = async (newUser: INewUser) => {
+  try {
+    const prisma = new PrismaClient();
+    const { password } = newUser;
+    const passwordHashed = await encryptPassword(password);
+    const { id } = await prisma.user.create({
+      data: { ...newUser, password: passwordHashed },
+    });
+    return { id };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (prismaErrorsCodes400.includes(error.code)) throw new PrismaError(error.message, 400);
+      if (prismaErrorsCodes404.includes(error.code)) throw new PrismaError(error.message, 404);
+      throw new PrismaError(error.message, 500);
+    }
+    throw ApiError.Internal('Error unknown in Prisma');
+  }
+};
 
 export const getUserService = async (searchParam: string): Promise<IUser> => {
   try {
