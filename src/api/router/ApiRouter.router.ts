@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import favRouter from '../routes/fav.routes';
-import authenticationRouter from '../routes/authentication.routes';
+import authRouter from '../routes/auth.routes';
 
 export class ApiRouter {
   readonly favs: Router;
-  readonly authentication: Router;
+  readonly auth: Router;
 
   constructor() {
     this.favs = favRouter;
-    this.authentication = authenticationRouter;
+    this.auth = authRouter;
   }
 }

@@ -3,14 +3,15 @@ import PrismaError from '../../config/errorsHandler/PrismaError.config';
 import validatePassword from '../utils/validatePasswords.utils';
 import env from '../../config/env.config';
 import { Prisma } from '@prisma/client';
-import { getUser } from './users.service';
-import { IAuthorization } from '../interfaces/authorization.interfaces';
+import { getUserService } from './users.service';
+import { IAuthorization } from '../interfaces/Authorization.interfaces';
+import { IUserAuthorized } from '../interfaces/UserAuthorized.interface';
 import { prismaErrorsCodes400, prismaErrorsCodes404 } from '../utils/prismaErrorsCode.utils';
 import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
 
 export const authenticationService = async (userEmail: string, userPassword: string): Promise<IAuthorization> => {
   try {
-    const { password, email } = await getUser(userEmail);
+    const { password, email } = await getUserService(userEmail);
     const isValidPassword = await validatePassword(password, userPassword);
     if (!isValidPassword) ApiError.Unauthorized();
     const TOKEN = getToken(email);
@@ -21,11 +22,21 @@ export const authenticationService = async (userEmail: string, userPassword: str
       if (prismaErrorsCodes404.includes(error.code)) throw new PrismaError(error.message, 404);
       throw new PrismaError(error.message, 500);
     }
+    if (error instanceof PrismaError) {
+      throw error;
+    }
     throw ApiError.Internal('Error unknown in Prisma');
   }
 };
 
+export const authorizationService = async (userEmail: string): Promise<IUserAuthorized> => {
+  try {
+    const { email } = await getUserService(userEmail);
+    return { email };
+  } catch (error) {}
+};
+
 const getToken = (payload: string): string => {
   const expToken: number = Math.floor(Date.now() / 1000) + 60 * 60;
-  return jwt.sign({ payload }, env.JWT_SECRET, { expiresIn: expToken });
+  return jwt.sign({ email: payload }, env.JWT_SECRET, { expiresIn: expToken });
 };
