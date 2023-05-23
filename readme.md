@@ -1,6 +1,6 @@
 # Favorites API
 
-This api provide a service of storage of favorites items in a postgres database. We develop an athentication and authorization service to protect the favorites lists of the differents users that could use our application.
+This api provide a service of storage of favorites items in a postgres database. We develop an authentication and authorization service to protect the favorites lists of the differents users that could use our application.
 
 ## Features
 
