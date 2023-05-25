@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { authenticationService, authorizationService, registerService } from '../../services/auth.service';
-import { ApiError } from '../../../config/errorsHandler/ApiErrors.config';
-import PrismaError from '../../../config/errorsHandler/PrismaError.config';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
+import PrismaError from '@config/errorsHandler/PrismaError.config';
 
 export const authentication = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

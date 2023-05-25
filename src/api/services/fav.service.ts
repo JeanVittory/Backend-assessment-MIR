@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { ICreateFavoriteResponse } from '../interfaces/CreateFavoriteResponse.interface';
-import { ICreateFavoriteParams } from '../interfaces/createFavoriteParams.interface';
+import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
+import { ICreateFavoriteParams } from '@interfaces/CreateFavoriteParams.interface';
 
 export const createFavService = async ({
   id,

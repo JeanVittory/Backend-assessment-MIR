@@ -1,14 +1,14 @@
 import jwt from 'jsonwebtoken';
-import PrismaError from '../../config/errorsHandler/PrismaError.config';
-import validatePassword from '../utils/validatePasswords.utils';
-import env from '../../config/env.config';
+import PrismaError from '@config/errorsHandler/PrismaError.config';
+import validatePassword from '@utils/validatePasswords.utils';
+import env from '@config/env.config';
 import { Prisma } from '@prisma/client';
 import { getUserService, createUser } from './users.service';
-import { IAuthorization } from '../interfaces/Authorization.interfaces';
-import { IUserAuthorized } from '../interfaces/UserAuthorized.interface';
-import { INewUser } from '../interfaces/NewUser.interface';
-import { prismaErrorsCodes400, prismaErrorsCodes404 } from '../utils/prismaErrorsCode.utils';
-import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
+import { IAuthorization } from '@interfaces/Authorization.interfaces';
+import { IUserAuthorized } from '@interfaces/UserAuthorized.interface';
+import { INewUser } from '@interfaces/NewUser.interface';
+import { prismaErrorsCodes400, prismaErrorsCodes404 } from '@utils/prismaErrorsCode.utils';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 export const authenticationService = async (userEmail: string, userPassword: string): Promise<IAuthorization> => {
   try {

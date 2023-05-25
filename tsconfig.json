@@ -5,7 +5,22 @@
     "target": "ES2020",
     "sourceMap": true,
     "outDir": "dist",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@constants/*": ["api/constants/*"],
+      "@controllers/*": ["api/controllers/*"],
+      "@database/*": ["api/database/*"],
+      "@interfaces/*": ["api/interfaces/*"],
+      "@joi/*": ["api/joi/*"],
+      "@middlewares/*": ["api/middlewares/*"],
+      "@router/*": ["api/router/*"],
+      "@routes/*": ["api/routes/*"],
+      "@services/*": ["api/services/*"],
+      "@utils/*": ["api/utils/*"],
+      "@config/*": ["config/*"]
+    }
   },
+
   "include": ["src/**/*"]
 }

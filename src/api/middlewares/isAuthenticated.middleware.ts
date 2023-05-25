@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken';
-import env from '../../config/env.config';
-import authorization from '../joi/authorization.joi';
 import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
-import { ITokenPayload } from '../interfaces/TokenPayload.interface';
 import { JsonWebTokenError } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+import env from '@config/env.config';
+import authorization from '@joi/authorization.joi';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
+import { ITokenPayload } from '@interfaces/TokenPayload.interface';
 
 const isAuthenticated = (req: Request, res: Response, next: NextFunction): void => {
   if (!req.headers.authorization) return next(ApiError.Forbbiden('You need to provide a TOKEN'));

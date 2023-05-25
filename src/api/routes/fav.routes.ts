@@ -1,11 +1,11 @@
-import isAuthenticated from '../middlewares/isAuthenticated.middleware';
 import { Router } from 'express';
+import isAuthenticated from '@middlewares/isAuthenticated.middleware';
 import {
   allUserFavorites,
   createFavoriteList,
   singleFavoriteList,
   removeFavoriteList,
-} from '../controllers/fav.controllers';
+} from '@controllers/fav.controllers';
 
 const favRouter = Router();
 

@@ -1,12 +1,12 @@
-import PrismaError from '../../config/errorsHandler/PrismaError.config';
+import { Request, Response, NextFunction } from 'express';
+import PrismaError from '@config/errorsHandler/PrismaError.config';
 import {
   getAllUserFavoritesService,
   createFavoriteListService,
   getSingleFavList,
   deleteSingleFavList,
-} from '../services/users.service';
-import { Request, Response, NextFunction } from 'express';
-import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
+} from '@services/users.service';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 export const allUserFavorites = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

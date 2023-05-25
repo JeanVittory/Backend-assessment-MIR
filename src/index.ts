@@ -1,3 +1,5 @@
+import 'module-alias/register';
+
 import { Backoffice } from './config/Backoffice.config';
 
 try {

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import register from '../joi/register.joi';
-import { ApiError } from '../../config/errorsHandler/ApiErrors.config';
+import register from '@joi/register.joi';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 const validateRegisterRequest = (req: Request, res: Response, next: NextFunction): void => {
   const { error } = register.validate(req.body);

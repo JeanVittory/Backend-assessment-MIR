@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc tsc-alias",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --respawn --exit-child ./src/index.ts",
     "test": "dotenv -e .env.sample -- npx prisma migrate dev && jest -i --detectOpenHandles",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -19,7 +19,9 @@
   "devDependencies": {
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.1",
     "@types/jsonwebtoken": "^9.0.1",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^18.16.1",
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
@@ -43,7 +45,8 @@
     "dotenv-cli": "^7.2.1",
     "express": "^4.18.2",
     "joi": "^17.9.2",
-    "jsonwebtoken": "^9.0.0"
+    "jsonwebtoken": "^9.0.0",
+    "module-alias": "^2.2.2"
   },
   "prisma": {
     "schema": "./src/api/database/prisma/schema.prisma"
@@ -52,5 +55,17 @@
     "typeRoots": [
       "./src/config/@types"
     ]
+  },
+  "_moduleAliases": {
+    "@constants": "./src/api/constants",
+    "@controllers": "./src/api/controllers",
+    "@interfaces": "./src/api/interfaces",
+    "@joi": "./src/api/joi",
+    "@middlewares": "./src/api/middlewares",
+    "@router": "./src/api/router",
+    "@routes": "./src/api/routes",
+    "@services": "./src/api/services",
+    "@utils": "./src/api/utils",
+    "@config": "./src/config"
   }
 }
