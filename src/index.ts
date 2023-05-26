@@ -1,6 +1,6 @@
 import 'module-alias/register';
-
 import { Backoffice } from './config/Backoffice.config';
+import logger from '@config/logger/logger.config';
 
 try {
   new Backoffice().start().catch(handleError);
@@ -9,5 +9,5 @@ try {
 }
 
 function handleError(e: any) {
-  console.log(e);
+  logger.error(e);
 }

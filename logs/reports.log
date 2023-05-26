@@ -1,0 +1,4 @@
+{"level":"\u001b[32minfo\u001b[39m","message":"Server running on port 4042","timestamp":"2023-05-25T22:03:35.249Z"}
+{"level":"info","message":"Server running on port 4042","timestamp":"2023-05-25T22:04:09.249Z"}
+{"level":"info","message":"Server running on port 4042","timestamp":"2023-05-25T22:04:49.839Z"}
+{"level":"error","message":"Something went wrong","stack":"Error: Something went wrong\n    at Server.<anonymous> (/Users/jeanvittory/Documents/Programacion/Fapi/Backend-assessment-MIR/src/config/app.config.ts:26:22)\n    at Object.onceWrapper (node:events:627:28)\n    at Server.emit (node:events:513:28)\n    at emitListeningNT (node:net:1466:10)\n    at processTicksAndRejections (node:internal/process/task_queues:82:21)","timestamp":"2023-05-25T22:04:49.861Z"}

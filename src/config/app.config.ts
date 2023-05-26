@@ -3,6 +3,7 @@ import * as http from 'http';
 import middlewares from './middlewares.config';
 import routes from './routes.config';
 import errorHandler from './errorsHandler/errorHandler.config';
+import logger from './logger/logger.config';
 
 export class Server {
   private port: string;
@@ -21,7 +22,7 @@ export class Server {
   async start(): Promise<http.Server> {
     return new Promise((resolve) => {
       this.httpServer = this.express.listen(this.port, () => {
-        console.log(`Server running on port ${this.port}`);
+        logger.info(`Server running on port ${this.port}`);
         resolve(this.httpServer);
       });
     });

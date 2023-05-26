@@ -1,10 +1,10 @@
 {
-  "name": "assesment-backend",
+  "name": "fapi",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc tsc-alias",
+    "build": "NODE_ENV=production tsc tsc-alias",
     "dev": "NODE_ENV=development ts-node-dev --transpile-only --respawn --exit-child ./src/index.ts",
     "test": "dotenv -e .env.sample -- npx prisma migrate dev && jest -i --detectOpenHandles",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -46,7 +46,8 @@
     "express": "^4.18.2",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.0",
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "winston": "^3.8.2"
   },
   "prisma": {
     "schema": "./src/api/database/prisma/schema.prisma"
