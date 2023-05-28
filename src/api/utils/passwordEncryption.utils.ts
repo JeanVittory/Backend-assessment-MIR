@@ -4,7 +4,9 @@ const encryptPassword = async (password: string): Promise<string> => {
   try {
     const hash = await argon2.hash(password);
     return hash;
-  } catch (error) {}
+  } catch (error) {
+    return error;
+  }
 };
 
 export default encryptPassword;

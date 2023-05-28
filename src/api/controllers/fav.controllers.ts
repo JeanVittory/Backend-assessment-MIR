@@ -5,7 +5,7 @@ import {
   createFavoriteListService,
   getSingleFavList,
   deleteSingleFavList,
-} from '@services/users.service';
+} from '@services/users/users.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 export const allUserFavorites = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

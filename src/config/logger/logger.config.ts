@@ -1,9 +1,9 @@
 import { developmentLogger } from './devLogger.config';
 import { productionLogger } from './prodLogger.config';
 
-let logger = null;
+let logger: any;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === 'development') {
   logger = developmentLogger();
 } else {
   logger = productionLogger();

@@ -8,7 +8,7 @@ import logger from './logger/logger.config';
 export class Server {
   private port: string;
   private express: express.Express;
-  httpServer?: http.Server;
+  httpServer: http.Server;
 
   constructor(port: string) {
     this.port = port;

@@ -1,13 +1,25 @@
-export const prismaErrorsCodes400 = [
+export const prismaErrorsCodes = [
+  'P2000',
+  'P2001',
   'P2002',
   'P2003',
+  'P2004',
   'P2005',
   'P2006',
+  'P2008',
+  'P2009',
+  'P2010',
   'P2011',
   'P2012',
+  'P2013',
+  'P2014',
+  'P2015',
+  'P2016',
+  'P2017',
+  'P2018',
   'P2019',
   'P2020',
   'P2022',
   'P2025',
+  'P2026',
 ];
-export const prismaErrorsCodes404 = ['P2016', 'P2026', 'P2018', 'P2029'];

@@ -4,7 +4,10 @@ import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 const validateRegisterRequest = (req: Request, res: Response, next: NextFunction): void => {
   const { error } = register.validate(req.body);
-  if (error) return next(ApiError.BadRequest('You should provide an email and password'));
+  if (error)
+    return next(
+      ApiError.BadRequest('Please check if you have provided all the necessary information for registration.'),
+    );
   next();
 };
 

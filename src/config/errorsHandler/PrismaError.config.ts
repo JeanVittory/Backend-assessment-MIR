@@ -1,7 +1,8 @@
 class PrismaError extends Error {
   status: number;
   constructor(message: string, status: number) {
-    super(message);
+    super();
+    this.message = message;
     this.status = status;
   }
 }
