@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
+import { getAllUserFavoritesService } from '@services/users/users.service';
 import {
-  getAllUserFavoritesService,
-  createFavoriteListService,
-  getSingleFavList,
-  deleteSingleFavList,
-} from '@services/users/users.service';
+  getSingleFavoriteListService,
+  handleFavoriteList,
+  deleteSingleFavoriteListService,
+} from '@services/favorites/fav.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 
 export const allUserFavorites = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -25,7 +25,7 @@ export const allUserFavorites = async (req: Request, res: Response, next: NextFu
 export const createFavoriteList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email } = req.user;
-    const favoriteListResponse = await createFavoriteListService(req.body, email);
+    const favoriteListResponse = await handleFavoriteList(req.body, email);
     res.status(201).json(favoriteListResponse);
   } catch (error) {
     if (error instanceof PrismaError) {
@@ -40,7 +40,7 @@ export const singleFavoriteList = async (req: Request, res: Response, next: Next
   try {
     const { email } = req.user;
     const { id: listId } = req.params;
-    const favoriteList = await getSingleFavList(email, listId);
+    const favoriteList = await getSingleFavoriteListService(email, listId);
     res.status(200).json(favoriteList);
   } catch (error) {
     if (error instanceof PrismaError) {
@@ -54,7 +54,7 @@ export const singleFavoriteList = async (req: Request, res: Response, next: Next
 export const removeFavoriteList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const idRemoved = await deleteSingleFavList(id);
+    const idRemoved = await deleteSingleFavoriteListService(id);
     res.status(200).json(idRemoved);
   } catch (error) {
     if (error instanceof PrismaError) {

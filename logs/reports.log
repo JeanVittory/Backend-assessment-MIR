@@ -16,3 +16,4 @@
 {"level":"error","message":"No User found","timestamp":"2023-05-27T05:19:37.780Z"}
 {"level":"error","message":"yayy","timestamp":"2023-05-27T05:24:40.768Z"}
 {"level":"error","message":"yayy","timestamp":"2023-05-27T05:25:31.518Z"}
+{"level":"error","message":"Cannot read properties of undefined (reading 'favs')","stack":"TypeError: Cannot read properties of undefined (reading 'favs')\n    at createFavoriteListService (/Users/jeanvittory/Documents/Programacion/Fapi/Backend-assessment-MIR/src/api/services/favorites/fav.service.ts:49:27)\n    at async Object.<anonymous> (/Users/jeanvittory/Documents/Programacion/Fapi/Backend-assessment-MIR/src/api/services/favorites/test/fav.test.ts:16:7)","timestamp":"2023-05-30T23:20:21.923Z"}
