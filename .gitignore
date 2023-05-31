@@ -2,5 +2,5 @@
 /dist
 /.env
 /.env.sample
-logs
+/logs
 notes.md
