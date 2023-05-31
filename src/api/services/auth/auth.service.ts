@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import validatePassword from '@utils/validatePasswords.utils';
 import env from '@config/env.config';
-import { getUserService, createUser } from './users/users.service';
+import validatePassword from '@utils/validatePasswords.utils';
+import { getUserService, createUser } from '@services/users/users.service';
 import { IAuthorization } from '@interfaces/Authorization.interface';
 import { IUserAuthorized } from '@interfaces/UserAuthorized.interface';
 import { INewUser } from '@interfaces/NewUser.interface';

@@ -1,11 +1,11 @@
 import { prismaMock } from '@database/test/singleton';
-import { createItemService } from '@services/item.service';
+import { createItemService } from '@services/item/item.service';
 import {
   createFavoriteListService,
   updateFavoriteListService,
   getSingleFavoriteListService,
   deleteSingleFavoriteListService,
-} from '../fav.service';
+} from '@services/favorites/fav.service';
 import { favoriteList, item, response, categoryName, inputGetFavoriteList, responseGetFavoriteList } from './mocks';
 
 describe('Tests from favorites service', () => {

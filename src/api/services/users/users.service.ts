@@ -1,11 +1,11 @@
-import { ApiError } from '../../../config/errorsHandler/ApiErrors.config';
 import { Prisma } from '@prisma/client';
-import { IUser } from '../../interfaces/User.interface';
-import { INewUser } from '../../interfaces/NewUser.interface';
-import encryptPassword from '../../utils/passwordEncryption.utils';
+import { ApiError } from '@config/errorsHandler/ApiErrors.config';
+import { IUser } from '@interfaces/User.interface';
+import { INewUser } from '@interfaces/NewUser.interface';
 import prisma from '@database/client';
-import PrismaError from '../../../config/errorsHandler/PrismaError.config';
+import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
+import encryptPassword from '@utils/passwordEncryption.utils';
 
 export const createUser = async (newUser: INewUser) => {
   try {

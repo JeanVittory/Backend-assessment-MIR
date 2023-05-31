@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { authenticationService, authorizationService, registerService } from '../../services/auth.service';
+import { authenticationService, authorizationService, registerService } from '../../services/auth/auth.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
