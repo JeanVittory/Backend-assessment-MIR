@@ -1,6 +1,11 @@
 import { prismaMock } from '@database/test/singleton';
 import { createItemService } from '@services/item.service';
-import { createFavoriteListService, updateFavoriteListService, getSingleFavoriteListService } from '../fav.service';
+import {
+  createFavoriteListService,
+  updateFavoriteListService,
+  getSingleFavoriteListService,
+  deleteSingleFavoriteListService,
+} from '../fav.service';
 import { favoriteList, item, response, categoryName, inputGetFavoriteList, responseGetFavoriteList } from './mocks';
 
 describe('Tests from favorites service', () => {
@@ -25,11 +30,17 @@ describe('Tests from favorites service', () => {
   describe("Test services who don't need create items before", () => {
     it('Should return a list of favorites of the user found by ID', async () => {
       //@ts-ignore
-      prismaMock.fav.findFirstOrThrow.mockResolvedValue(response2);
+      prismaMock.fav.findFirstOrThrow.mockResolvedValue(responseGetFavoriteList);
 
       await expect(getSingleFavoriteListService(inputGetFavoriteList.email, inputGetFavoriteList.id)).resolves.toEqual(
         responseGetFavoriteList,
       );
+    });
+
+    it('Should delete and return an ID of the item deleted', async () => {
+      //@ts-ignore
+      prismaMock.fav.delete.mockResolvedValue({ id: '1' });
+      expect(deleteSingleFavoriteListService('1')).resolves.toEqual(response);
     });
   });
 });
