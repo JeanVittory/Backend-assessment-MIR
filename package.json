@@ -5,10 +5,13 @@
   "main": "index.js",
   "scripts": {
     "build": "cross-env NODE_ENV=production tsc tsc-alias",
-    "dev": "cross-env NODE_ENV=development ts-node-dev --transpile-only --respawn --exit-child ./src/index.ts",
-    "test": "cross-env NODE_ENV=test jest -i --detectOpenHandles",
+    "dev": "cross-env NODE_ENV=development dotenv -e .env.development -- ts-node-dev --transpile-only --respawn --exit-child ./src/index.ts",
+    "migrate:unit": "dotenv -e .env.test -- npx prisma migrate dev",
+    "test:unit": "dotenv -e .env.test -- jest -i --testPathPattern=src/test/unit --detectOpenHandles",
+    "migrate:integration": "dotenv -e .env.integration -- npx prisma migrate dev",
+    "test:integration": "dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prisma:migrate": "npx prisma migrate dev",
+    "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",
     "prisma:reset": "npx prisma migrate reset",
     "prisma:seeders": "ts-node-dev ./src/api/database/seeders/createUser.seeders.ts"
@@ -24,6 +27,7 @@
     "@types/mocha": "^10.0.1",
     "@types/node": "^18.16.1",
     "@types/supertest": "^2.0.12",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.59.1",
     "@typescript-eslint/parser": "^5.59.1",
     "eslint": "^8.39.0",
@@ -35,8 +39,10 @@
     "prisma": "4.13.0",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "uuid": "^9.0.0"
   },
   "dependencies": {
     "@prisma/client": "4.13.0",

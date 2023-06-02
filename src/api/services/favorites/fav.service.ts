@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import prisma from '@database/client';
+import prisma from '../../database/client';
 import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 import { ICreateFavoriteParams } from '@interfaces/CreateFavoriteParams.interface';
 import { INewItem } from '@interfaces/NewItem.interface';
@@ -56,11 +56,7 @@ export const updateFavoriteListService = async (
     });
     return { id };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      throw new PrismaError(error.message, 400);
-    }
-    logger.error(error);
-    throw ApiError.Internal('Something went wrong');
+    throw error;
   }
 };
 

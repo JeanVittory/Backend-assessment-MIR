@@ -22,6 +22,5 @@
       "@config/*": ["config/*"]
     }
   },
-
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "./jest.config.ts"]
 }

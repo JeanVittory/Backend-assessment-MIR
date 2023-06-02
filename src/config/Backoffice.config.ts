@@ -13,6 +13,10 @@ export class Backoffice {
     return this.server?.getHTTPServer();
   }
 
+  get app() {
+    return this.server?.getApp();
+  }
+
   async stop() {
     return this.server?.stop();
   }

@@ -36,7 +36,8 @@ export const authorizationService = async (userEmail: string): Promise<IUserAuth
 
 export const registerService = async (newUser: INewUser) => {
   try {
-    return await createUser(newUser);
+    const response = await createUser(newUser);
+    return response;
   } catch (error) {
     throw error;
   }

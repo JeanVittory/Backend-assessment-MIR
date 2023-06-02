@@ -1,4 +1,5 @@
 module.exports = {
+  clearMocks: true,
   roots: ['<rootDir>/src/'],
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -6,7 +7,7 @@ module.exports = {
     '^.+\\.ts?$': 'ts-jest',
   },
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  setupFilesAfterEnv: ['./src/api/database/test/singleton.ts'],
+  //setupFilesAfterEnv: ['<rootDir>/src/api/database/test/singleton.ts'],
   moduleNameMapper: {
     '@constants/(.*)': '<rootDir>/src/api/constants/$1',
     '@controllers/(.*)': '<rootDir>/src/api/controllers/$1',

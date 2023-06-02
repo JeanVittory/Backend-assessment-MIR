@@ -2,19 +2,18 @@ import { Prisma } from '@prisma/client';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import { IUser } from '@interfaces/User.interface';
 import { INewUser } from '@interfaces/NewUser.interface';
-import prisma from '@database/client';
+import prisma from '../../database/client';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
 import encryptPassword from '@utils/passwordEncryption.utils';
 
-export const createUser = async (newUser: INewUser) => {
+export const createUser = async ({ email, password, username }: INewUser) => {
   try {
-    const { password } = newUser;
     const passwordHashed = await encryptPassword(password);
-    const { id } = await prisma.user.create({
-      data: { ...newUser, password: passwordHashed },
+    const user = await prisma.user.create({
+      data: { email, username, password: passwordHashed },
     });
-    return { id };
+    return { id: user.id };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new PrismaError(error.message, 400);
@@ -37,7 +36,6 @@ export const getUserService = async (searchParam: string): Promise<IUser> => {
       throw new PrismaError(error.message, 400);
     }
     logger.error(error.message);
-    console.log(error);
     throw ApiError.Internal('Something went wrong');
   }
 };
