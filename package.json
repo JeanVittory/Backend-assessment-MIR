@@ -6,10 +6,10 @@
   "scripts": {
     "build": "cross-env NODE_ENV=production tsc tsc-alias",
     "dev": "cross-env NODE_ENV=development dotenv -e .env.development -- ts-node-dev --transpile-only --respawn --exit-child ./src/index.ts",
-    "migrate:unit": "dotenv -e .env.test -- npx prisma migrate dev",
-    "test:unit": "dotenv -e .env.test -- jest -i --testPathPattern=src/test/unit --detectOpenHandles",
+    "migrate:unit": "dotenv -e .env.unit -- npx prisma migrate dev",
+    "test:unit": "cross-env NODE_ENV=test  dotenv -e .env.unit -- jest -i --testPathPattern=src/test/unit --detectOpenHandles",
     "migrate:integration": "dotenv -e .env.integration -- npx prisma migrate dev",
-    "test:integration": "dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
+    "test:integration": "cross-env NODE_ENV=test dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
     "format": "prettier --write \"src/**/*.ts\"",
     "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",

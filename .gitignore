@@ -4,6 +4,6 @@
 /.env.sample
 /logs
 notes.md
-.env.test
+.env.unit
 .env.development
 .env.integration
