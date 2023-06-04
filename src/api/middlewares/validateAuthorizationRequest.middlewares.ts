@@ -4,7 +4,7 @@ import authentication from '@joi/authentication.joi';
 
 const validateAuthenticationRequest = (req: Request, res: Response, next: NextFunction): void => {
   const { error } = authentication.validate(req.body);
-  if (error) return next(ApiError.BadRequest('Credentials failed'));
+  if (error) return next(ApiError.BadRequest('Credentials failed.'));
   next();
 };
 

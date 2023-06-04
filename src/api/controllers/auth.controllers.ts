@@ -8,12 +8,12 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
   try {
     const { email, password } = req.body;
     const token = await authenticationService(email, password);
+    console.log(token);
     res.status(200).json(token);
   } catch (error) {
     logger.error(error);
-    if (error instanceof PrismaError) {
-      return next(ApiError.Unauthorized('Authentication denied.'));
-    }
+    if (error instanceof PrismaError) return next(ApiError.Unauthorized('Authentication denied.'));
+    if (error instanceof ApiError) return next(error);
     return next(ApiError.Internal('Unknown Error'));
   }
 };
@@ -25,9 +25,8 @@ export const authorization = async (req: Request, res: Response, next: NextFunct
     res.status(200).json(userEmail);
   } catch (error) {
     logger.error(error);
-    if (error instanceof PrismaError) {
-      return next(ApiError.Forbbiden('Authorization denied.'));
-    }
+    if (error instanceof PrismaError) return next(ApiError.Forbbiden('Authorization denied.'));
+    if (error instanceof ApiError) return next(error);
     return next(ApiError.Internal('Unknown Error'));
   }
 };
@@ -38,9 +37,9 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     res.status(201).json(newUserId);
   } catch (error) {
     logger.error(error);
-    if (error instanceof PrismaError) {
+    if (error instanceof PrismaError)
       return next(ApiError.BadRequest('Please, check if you have provide all the information necessary to register.'));
-    }
+    if (error instanceof ApiError) return next(error);
     return next(ApiError.Internal('Unknown Error'));
   }
 };

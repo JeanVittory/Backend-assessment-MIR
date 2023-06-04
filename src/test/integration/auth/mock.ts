@@ -19,3 +19,12 @@ export const login = {
   email: 'test2@test.com',
   password: 'Password1!',
 };
+
+export const loginWithIncompleteData = {
+  email: 'test2@test.com',
+};
+
+export const userWithAuthenticationFailed = {
+  email: 'test2@test.com',
+  password: 'WrongPassword12!',
+};

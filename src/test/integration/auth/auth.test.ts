@@ -1,6 +1,13 @@
 import { Backoffice } from '@config/Backoffice.config';
 import { Server } from 'http';
-import { userToRegister, userDataIncomplete, userDataWrongPassword, login } from './mock';
+import {
+  userToRegister,
+  userDataIncomplete,
+  userDataWrongPassword,
+  login,
+  loginWithIncompleteData,
+  userWithAuthenticationFailed,
+} from './mock';
 import { auth } from '@config/constants/rootRoutes.constants';
 import {
   register as registerEndpoint,
@@ -8,7 +15,6 @@ import {
 } from '@routes/endpoints/auth.endpoints';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
-import { authentication } from '@controllers/auth.controllers';
 
 describe('Tests Auth endpoints', () => {
   let app: Server;
@@ -68,16 +74,16 @@ describe('Tests Auth endpoints', () => {
         2. The password should contain at least one lowercase letter.
         3. The password should contain at least one digit.
         4. The password must be greater than 8 characters
-      `, async () => {
+        `, async () => {
         await Request(app).post(`${auth}${registerEndpoint}`).send(userDataWrongPassword).expect(400);
       });
 
       it(`Should respond with a message if the password do not match with the following requirements:
-      1. The password should contain at least one uppercase letter.
-      2. The password should contain at least one lowercase letter.
-      3. The password should contain at least one digit.
-      4. The password must be greater than 8 characters
-      `, async () => {
+        1. The password should contain at least one uppercase letter.
+        2. The password should contain at least one lowercase letter.
+        3. The password should contain at least one digit.
+        4. The password must be greater than 8 characters
+        `, async () => {
         const { body } = await Request(app).post(`${auth}${registerEndpoint}`).send(userDataIncomplete);
         expect(body).toMatch(/Please check if you have provided all the necessary information for registration./i);
       });
@@ -114,6 +120,53 @@ describe('Tests Auth endpoints', () => {
         const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
         expect(typeof body.ACCESS_TOKEN).toBe('string');
       });
+    });
+  });
+
+  describe('Tests that should respond something if there is an error', () => {
+    beforeEach(async () => {
+      await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+    });
+
+    afterEach(async () => {
+      await resetDB();
+    });
+
+    it('Should respond a 400 status code if there is not an email and password into the request', async () => {
+      await Request(app).post(`${auth}${authenticationEndpoint}`).send(loginWithIncompleteData).expect(400);
+    });
+
+    it('Should return a  "Credentials failed" message if there is not an email and password into the request', async () => {
+      const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(loginWithIncompleteData);
+      expect(body).toMatch(/Credentials failed./i);
+    });
+
+    it(`Should respond with a status code 400 if the password do not match with the following requirements:
+      1. The password should contain at least one uppercase letter.
+      2. The password should contain at least one lowercase letter.
+      3. The password should contain at least one digit.
+      4. The password must be greater than 8 characters
+      `, async () => {
+      await Request(app).post(`${auth}${authenticationEndpoint}`).send(userDataWrongPassword).expect(400);
+    });
+
+    it(`Should respond with a message if the password do not match with the following requirements:
+      1. The password should contain at least one uppercase letter.
+      2. The password should contain at least one lowercase letter.
+      3. The password should contain at least one digit.
+      4. The password must be greater than 8 characters
+      `, async () => {
+      const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(userDataWrongPassword);
+      expect(body).toMatch(/Credentials failed./i);
+    });
+
+    it('Should respond with a 401 status code if the password do not match with any user', async () => {
+      await Request(app).post(`${auth}${authenticationEndpoint}`).send(userWithAuthenticationFailed).expect(401);
+    });
+
+    it('Should respond with "Authentication credential failed" message if the password do not match with any user', async () => {
+      const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(userWithAuthenticationFailed);
+      expect(body).toMatch(/Authentication credential failed./i);
     });
   });
 });

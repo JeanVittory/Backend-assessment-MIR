@@ -15,11 +15,11 @@ export const authenticationService = async (
     const { password, email } = await getUserService(userEmail);
     if (password && email) {
       const isValidPassword = await validatePassword(password, userPassword);
-      if (!isValidPassword) ApiError.Unauthorized();
+      if (!isValidPassword) throw ApiError.Unauthorized();
       const TOKEN = getToken(email);
       return { ACCESS_TOKEN: TOKEN };
     }
-    return ApiError.BadRequest();
+    throw ApiError.BadRequest();
   } catch (error) {
     throw error;
   }
