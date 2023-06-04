@@ -1,3 +1,3 @@
 export const register: string = '/register';
-export const login: string = '/login';
+export const authentication: string = '/login';
 export const authorization: string = '/authorization';

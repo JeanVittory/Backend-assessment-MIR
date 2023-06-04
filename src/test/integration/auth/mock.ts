@@ -14,3 +14,8 @@ export const userDataWrongPassword = {
   username: 'test',
   password: '12345',
 };
+
+export const login = {
+  email: 'test2@test.com',
+  password: 'Password1!',
+};
