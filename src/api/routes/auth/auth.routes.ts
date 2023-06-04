@@ -1,13 +1,18 @@
 import { Router } from 'express';
 import { authentication, authorization, register } from '@controllers/auth.controllers';
+import {
+  register as registerEndpoint,
+  login as loginEndpoint,
+  authorization as authorizationEndpoint,
+} from '@routes/endpoints/auth.endpoints';
 import validateAuthenticationRequest from '@middlewares/validateAuthorizationRequest.middlewares';
 import isAuthenticated from '@middlewares/isAuthenticated.middleware';
 import validateRegisterRequest from '@middlewares/validateRegister.middleware';
 
 const authRouter = Router();
 
-authRouter.post('/register', validateRegisterRequest, register);
-authRouter.post('/login', validateAuthenticationRequest, authentication);
-authRouter.post('/authorization', isAuthenticated, authorization);
+authRouter.post(registerEndpoint, validateRegisterRequest, register);
+authRouter.post(loginEndpoint, validateAuthenticationRequest, authentication);
+authRouter.post(authorizationEndpoint, isAuthenticated, authorization);
 
 export default authRouter;

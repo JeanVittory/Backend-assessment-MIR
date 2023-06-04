@@ -1,10 +1,12 @@
 import { Backoffice } from '@config/Backoffice.config';
 import { Server } from 'http';
-import { userToRegister } from './mock';
+import { userToRegister, userDataIncomplete, userDataWrongPassword } from './mock';
+import { auth } from '@config/constants/rootRoutes.constants';
+import { register } from '@routes/endpoints/auth.endpoints';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
 
-describe('Test Auth endpoints', () => {
+describe('Tests Auth endpoints', () => {
   let app: Server;
 
   beforeAll(async () => {
@@ -19,33 +21,62 @@ describe('Test Auth endpoints', () => {
     app.close();
   });
 
-  describe('POST: /auth/local/register', () => {
-    it('Should register a user and return a 201 status code if everything goes well', async () => {
-      //@ts-ignore
-      const { status } = await Request(app).post('/auth/local/register').send(userToRegister);
-      expect(status).toBe(201);
-    });
+  describe(`POST: ${auth}${register}`, () => {
+    describe('Tests that should respond something if everything goes well', () => {
+      it('Should register a user and return a 201 status code if everything goes well', async () => {
+        await Request(app).post(`${auth}${register}`).send(userToRegister).expect(201);
+      });
 
-    it('Should return a content type application json if everything goes well', async () => {
-      await Request(app)
-        .post('/auth/local/register')
-        .send(userToRegister)
-        .expect('Content-Type', /application\/json/);
-    });
+      it('Should return a content type application json if everything goes well', async () => {
+        await Request(app)
+          .post(`${auth}${register}`)
+          .send(userToRegister)
+          .expect('Content-Type', /application\/json/);
+      });
 
-    it('Should return an object as response if everything goes well', async () => {
-      const { body } = await Request(app).post('/auth/local/register').send(userToRegister);
-      expect(typeof body).toBe('object');
-    });
+      it('Should return an object as response if everything goes well', async () => {
+        const { body } = await Request(app).post(`${auth}${register}`).send(userToRegister);
+        expect(typeof body).toBe('object');
+      });
 
-    it('Should return an object with a key call id who will contain a string if everything goes well', async () => {
-      const { body } = await Request(app).post('/auth/local/register').send(userToRegister);
-      console.log(body);
-      expect(body).toEqual(
-        expect.objectContaining({
-          id: expect.any('string'),
-        }),
-      );
+      it('Should return an object if everything goes well', async () => {
+        const { body } = await Request(app).post(`${auth}${register}`).send(userToRegister);
+        expect(typeof body).toEqual('object');
+      });
+
+      it('Should return an object with a key call id who will contain a string if everything goes well', async () => {
+        const { body } = await Request(app).post(`${auth}${register}`).send(userToRegister);
+        expect(typeof body.id).toEqual('string');
+      });
+    });
+    describe('Tests that should respond something if there is an error', () => {
+      it('Should return an status code 400 if the user do not provide an email, username and password', async () => {
+        await Request(app).post(`${auth}${register}`).send(userDataIncomplete).expect(400);
+      });
+
+      it('Should return a message if the user do not provide an email, username and password', async () => {
+        const { body } = await Request(app).post(`${auth}${register}`).send(userDataIncomplete);
+        expect(body).toMatch(/Please check if you have provided all the necessary information for registration./i);
+      });
+
+      it(`Should respond with a status code 400 if the password do not match with the following requirements:
+        1. The password should contain at least one uppercase letter.
+        2. The password should contain at least one lowercase letter.
+        3. The password should contain at least one digit.
+        4. The password must be greater than 8 characters
+      `, async () => {
+        await Request(app).post(`${auth}${register}`).send(userDataWrongPassword).expect(400);
+      });
+
+      it(`Should respond with a message if the password do not match with the following requirements:
+      1. The password should contain at least one uppercase letter.
+      2. The password should contain at least one lowercase letter.
+      3. The password should contain at least one digit.
+      4. The password must be greater than 8 characters
+      `, async () => {
+        const { body } = await Request(app).post(`${auth}${register}`).send(userDataIncomplete);
+        expect(body).toMatch(/Please check if you have provided all the necessary information for registration./i);
+      });
     });
   });
 });
