@@ -7,3 +7,4 @@ notes.md
 .env.unit
 .env.development
 .env.integration
+/coverage
