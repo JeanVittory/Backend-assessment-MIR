@@ -16,16 +16,25 @@ import {
 } from '@routes/endpoints/auth.endpoints';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
+import logger from '@config/logger/logger.config';
 
 describe('Tests Auth endpoints', () => {
   let app: Server;
 
   beforeAll(async () => {
-    app = await new Backoffice().start();
+    try {
+      app = await new Backoffice().start();
+    } catch (error) {
+      logger.error(error);
+    }
   });
 
   afterEach(async () => {
-    await resetDB();
+    try {
+      await resetDB();
+    } catch (error) {
+      logger.error(error);
+    }
   });
 
   afterAll(() => {
@@ -94,11 +103,19 @@ describe('Tests Auth endpoints', () => {
   describe(`POST: ${auth}${authenticationEndpoint}`, () => {
     describe('Tests that should respond something if everything goes well', () => {
       beforeEach(async () => {
-        await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+        } catch (error) {
+          logger.error(error);
+        }
       });
 
       afterEach(async () => {
-        await resetDB();
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
       });
 
       it('Should respond with a 200 status code if the login goes well', async () => {
@@ -126,11 +143,19 @@ describe('Tests Auth endpoints', () => {
 
   describe('Tests that should respond something if there is an error', () => {
     beforeEach(async () => {
-      await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+      try {
+        await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+      } catch (error) {
+        logger.error(error);
+      }
     });
 
     afterEach(async () => {
-      await resetDB();
+      try {
+        await resetDB();
+      } catch (error) {
+        logger.error(error);
+      }
     });
 
     it('Should respond a 400 status code if there is not an email and password into the request', async () => {
@@ -175,20 +200,86 @@ describe('Tests Auth endpoints', () => {
     describe('Tests that should respond somenthing if everything goes well', () => {
       let ACCESS_TOKEN: string;
       beforeEach(async () => {
-        await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-        const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-        console.log(body);
-        ACCESS_TOKEN = body.ACCESS_TOKEN;
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+        } catch (error) {
+          logger.error(error);
+        }
       });
 
       afterEach(async () => {
-        await resetDB();
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
       });
       it('Should respond with 200 status code if everything goes well', async () => {
         await Request(app)
           .post(`${auth}${authorizationEndpoint}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
           .expect(200);
+      });
+
+      it('Should respond with a format application/json if everything goes well', async () => {
+        await Request(app)
+          .post(`${auth}${authorizationEndpoint}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .expect('Content-Type', /application\/json/);
+      });
+
+      it('Should respond with an object and a key call "email" into if everything goes well', async () => {
+        const { body } = await Request(app)
+          .post(`${auth}${authorizationEndpoint}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        expect(body).toHaveProperty('email');
+      });
+
+      it('Should respond with the email of the user if everything goes well', async () => {
+        const { body } = await Request(app)
+          .post(`${auth}${authorizationEndpoint}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+
+        expect(typeof body.email).toEqual('string');
+      });
+    });
+
+    describe('Should respond with something if there is an error on the request', () => {
+      let ACCESS_TOKEN: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      it('Tests that should respond with a 403 status code if the user do not provide a token', async () => {
+        await Request(app).post(`${auth}${authorizationEndpoint}`).expect(403);
+      });
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).post(`${auth}${authorizationEndpoint}`);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).post(`${auth}${authorizationEndpoint}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).post(`${auth}${authorizationEndpoint}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
       });
     });
   });

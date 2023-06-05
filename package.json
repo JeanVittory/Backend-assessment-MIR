@@ -11,10 +11,10 @@
     "migrate:integration": "dotenv -e .env.integration -- npx prisma migrate dev",
     "test:integration": "cross-env NODE_ENV=test dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
     "format": "prettier --write \"src/**/*.ts\"",
-    "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio",
-    "prisma:reset": "npx prisma migrate reset",
-    "prisma:seeders": "ts-node-dev ./src/api/database/seeders/createUser.seeders.ts"
+    "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate deploy",
+    "prisma:studio": "dotenv -e .env.development -- npx prisma studio",
+    "prisma:reset": "dotenv -e .env.development -- npx prisma migrate reset",
+    "prisma:seeders": "dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createUser.seeders.ts"
   },
   "keywords": [],
   "author": "",
