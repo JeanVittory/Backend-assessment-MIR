@@ -12,6 +12,7 @@ import { auth } from '@config/constants/rootRoutes.constants';
 import {
   register as registerEndpoint,
   authentication as authenticationEndpoint,
+  authorization as authorizationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
@@ -100,7 +101,7 @@ describe('Tests Auth endpoints', () => {
         await resetDB();
       });
 
-      it('Should respond with a 200 status code if everything goes well', async () => {
+      it('Should respond with a 200 status code if the login goes well', async () => {
         await Request(app).post(`${auth}${authenticationEndpoint}`).send(login).expect(200);
       });
 
@@ -167,6 +168,28 @@ describe('Tests Auth endpoints', () => {
     it('Should respond with "Authentication credential failed" message if the password do not match with any user', async () => {
       const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(userWithAuthenticationFailed);
       expect(body).toMatch(/Authentication credential failed./i);
+    });
+  });
+
+  describe(`POST: ${auth}${authorizationEndpoint}`, () => {
+    describe('Tests that should respond somenthing if everything goes well', () => {
+      let ACCESS_TOKEN: string;
+      beforeEach(async () => {
+        await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+        const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+        console.log(body);
+        ACCESS_TOKEN = body.ACCESS_TOKEN;
+      });
+
+      afterEach(async () => {
+        await resetDB();
+      });
+      it('Should respond with 200 status code if everything goes well', async () => {
+        await Request(app)
+          .post(`${auth}${authorizationEndpoint}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .expect(200);
+      });
     });
   });
 });

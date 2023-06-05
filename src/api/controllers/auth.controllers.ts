@@ -8,7 +8,6 @@ export const authentication = async (req: Request, res: Response, next: NextFunc
   try {
     const { email, password } = req.body;
     const token = await authenticationService(email, password);
-    console.log(token);
     res.status(200).json(token);
   } catch (error) {
     logger.error(error);

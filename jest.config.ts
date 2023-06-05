@@ -7,7 +7,6 @@ module.exports = {
     '^.+\\.ts?$': 'ts-jest',
   },
   transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  //setupFilesAfterEnv: ['<rootDir>/src/api/database/test/singleton.ts'],
   moduleNameMapper: {
     '@constants/(.*)': '<rootDir>/src/api/constants/$1',
     '@controllers/(.*)': '<rootDir>/src/api/controllers/$1',
