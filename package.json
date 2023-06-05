@@ -10,6 +10,7 @@
     "test:unit": "cross-env NODE_ENV=test  dotenv -e .env.unit -- jest -i --testPathPattern=src/test/unit --detectOpenHandles",
     "migrate:integration": "dotenv -e .env.integration -- npx prisma migrate dev",
     "test:integration": "cross-env NODE_ENV=test dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
+    "coverage": "dotenv -e .env.integration -- npx jest --collectCoverage",
     "format": "prettier --write \"src/**/*.ts\"",
     "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate deploy",
     "prisma:studio": "dotenv -e .env.development -- npx prisma studio",
