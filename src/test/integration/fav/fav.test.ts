@@ -15,9 +15,11 @@ import logger from '@config/logger/logger.config';
 
 describe('Tests favs endpoints', () => {
   let app: Server;
+  let backoffice: Backoffice;
   beforeAll(async () => {
     try {
-      app = await new Backoffice().start();
+      backoffice = new Backoffice();
+      app = await backoffice.start();
     } catch (error) {
       logger.error(error);
     }
@@ -31,8 +33,12 @@ describe('Tests favs endpoints', () => {
     }
   });
 
-  afterAll(() => {
-    app.close();
+  afterAll(async () => {
+    try {
+      await backoffice.stop();
+    } catch (error) {
+      logger.error(error);
+    }
   });
   describe(`GET: ${favs}${GET_ALL_USERS_FAVORITES}`, () => {
     describe('Tests that should respond with something if everything goes well', () => {
@@ -105,17 +111,3 @@ describe('Tests favs endpoints', () => {
     });
   });
 });
-
-/*
-
-{ favs: [ { name: 'Sports', items: [Array] } ] }
-
-[
-  {
-    id: 'dbeedb63-9b29-41c9-ae9a-a52fca96613a',
-    title: 'Soccer',
-    description: 'I love soccer',
-    link: 'https://soccer.dev'
-  }
-]
-*/
