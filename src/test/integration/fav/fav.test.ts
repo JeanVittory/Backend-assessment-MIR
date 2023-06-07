@@ -10,7 +10,7 @@ import {
   register as registerEndpoint,
   authentication as authenticationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
-import { newItem, arrayOfNewItems } from './mock';
+import { newItem, arrayOfNewItems, expectedResponseKeys, expectedItemKeys } from './mock';
 import { userToRegister, login } from '../auth/mock';
 import { handleFavoriteList } from '@services/favorites/fav.service';
 import resetDB from '@database/test/reset';
@@ -212,10 +212,8 @@ describe('Tests favs endpoints', () => {
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
           .send(newItem);
-
-        const expectedKeys = ['id', 'name', 'items'];
         const actualKeys = Object.keys(body);
-        expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+        expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
       });
 
       it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
@@ -223,9 +221,8 @@ describe('Tests favs endpoints', () => {
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
           .send(newItem);
-        const expectedKeys = ['id', 'title', 'description', 'link', 'category'];
         const actualKeys = Object.keys(body.items[0]);
-        expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+        expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
       });
 
       it('Should contain 2 items added in the items property of the object at response', async () => {
@@ -284,6 +281,59 @@ describe('Tests favs endpoints', () => {
       it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
         const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`);
         expect(body).toMatch(/Authorization denied./i);
+      });
+    });
+  });
+
+  describe(`GET: ${favs}${GET_SINGLE_FAVORITE_LIST}`, () => {
+    describe('Tests that should respond with something if everything goes well on process', () => {
+      let ACCESS_TOKEN: string;
+      let listId: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          listId = postListResponse.id;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond a 200 status code if everything goes well', async () => {
+        await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
+      });
+      it('Should respond an appilcation/json format if everything goes well', async () => {
+        await Request(app)
+          .get(`${favs}/${listId}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .expect('Content-Type', /application\/json/i);
+      });
+
+      it('Should contain the keys "id", "name" and "items" into the object of response', async () => {
+        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        const actualKeys = Object.keys(body);
+        expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
       });
     });
   });

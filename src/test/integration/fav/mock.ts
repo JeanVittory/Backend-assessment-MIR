@@ -5,6 +5,10 @@ export const newItem = {
   category: 'Sports',
 };
 
+export const expectedResponseKeys = ['id', 'name', 'items'];
+
+export const expectedItemKeys = ['id', 'title', 'description', 'link', 'category'];
+
 export const arrayOfNewItems = [
   {
     title: 'Soccer',

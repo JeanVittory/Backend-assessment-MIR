@@ -8,6 +8,7 @@ import { getAllUserFavoritesService } from '@services/users/users.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
+import { IGetSingleFavoriteList } from '@interfaces/GetSingleFavoriteList.interface';
 
 export const handleFavoriteList = async (item: INewItem, email: string): Promise<ICreateFavoriteResponse> => {
   try {
@@ -70,13 +71,14 @@ export const updateFavoriteListService = async (
   }
 };
 
-export const getSingleFavoriteListService = async (email: string, listId: string) => {
+export const getSingleFavoriteListService = async (email: string, listId: string): Promise<IGetSingleFavoriteList> => {
   try {
     return await prisma.fav.findFirstOrThrow({
       where: {
         AND: [{ user: { email } }, { id: listId }],
       },
       select: {
+        id: true,
         name: true,
         items: {
           select: {
@@ -90,10 +92,10 @@ export const getSingleFavoriteListService = async (email: string, listId: string
       },
     });
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      throw new PrismaError(error.message, 400);
-    }
     logger.error(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'NotFound')
+      throw new PrismaError(error.message, 404);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
     throw ApiError.Internal('Something went wrong');
   }
 };
