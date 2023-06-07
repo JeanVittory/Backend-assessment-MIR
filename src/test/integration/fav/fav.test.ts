@@ -5,6 +5,7 @@ import {
   GET_ALL_USERS_FAVORITES,
   POST_FAVORITE_LIST,
   GET_SINGLE_FAVORITE_LIST,
+  DELETE_FAVORITE_LIST,
 } from '@routes/endpoints/favs.endpoints';
 import {
   register as registerEndpoint,
@@ -304,6 +305,7 @@ describe('Tests favs endpoints', () => {
           logger.error(error);
         }
       });
+
       afterEach(async () => {
         try {
           await resetDB();
@@ -334,6 +336,94 @@ describe('Tests favs endpoints', () => {
         const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
         const actualKeys = Object.keys(body);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
+      });
+
+      it('Should contain 3 items added in the items property of the object at response', async () => {
+        const expectedLength = 3;
+        for (let item of arrayOfNewItems) {
+          await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(item);
+        }
+        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        expect(body.items).toHaveLength(expectedLength);
+      });
+
+      it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
+        for (let item of arrayOfNewItems) {
+          await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(item);
+        }
+        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        for (let item of body.items) {
+          const actualKeys = Object.keys(item);
+          expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
+        }
+      });
+    });
+
+    describe('Tests that should respond with something if there is an error on process', () => {
+      let ACCESS_TOKEN: string;
+      let listId: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          listId = postListResponse.id;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      it("Should respond with a 404 status code if the list ID doesn't exist at DB", async () => {
+        await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
+      });
+
+      it('Should respond with a message "Not Found" if there is not any list that match at DB with the list ID provided', async () => {
+        const { body } = await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        expect(body).toMatch(/Not Found/i);
+      });
+
+      it('Should respond with a 403 status code if the user do not pass a token', async () => {
+        await Request(app).get(`${favs}/${listId}`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).get(`${favs}/${listId}`).expect(403);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
       });
     });
   });

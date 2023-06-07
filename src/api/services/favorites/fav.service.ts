@@ -93,7 +93,7 @@ export const getSingleFavoriteListService = async (email: string, listId: string
     });
   } catch (error) {
     logger.error(error);
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'NotFound')
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
       throw new PrismaError(error.message, 404);
     if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
     throw ApiError.Internal('Something went wrong');

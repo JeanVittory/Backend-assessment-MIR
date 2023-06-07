@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import prisma from '@database/client';
+import prisma from '../api/database/client';
 
 export default function scheduleRestart() {
   return cron.schedule(

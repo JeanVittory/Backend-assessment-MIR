@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from 'winston';
+import envConfig from '@config/env.config';
 const { printf, combine, timestamp, colorize, errors } = format;
 
 export const developmentLogger = () => {
@@ -9,5 +10,6 @@ export const developmentLogger = () => {
     level: 'debug',
     format: combine(colorize(), errors({ stack: true }), timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), messageFormat),
     transports: [new transports.Console()],
+    silent: process.env.NODE_ENV === 'test',
   });
 };
