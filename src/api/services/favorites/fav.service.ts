@@ -35,10 +35,15 @@ export const createFavoriteListService = async ({
   email,
 }: ICreateFavoriteParams): Promise<ICreateFavoriteResponse> => {
   try {
-    const { id: favId } = await prisma.fav.create({
+    const response = await prisma.fav.create({
       data: { name: category, items: { connect: { id } }, user: { connect: { email } } },
+      select: {
+        id: true,
+        name: true,
+        items: { select: { id: true, title: true, description: true, link: true, category: true } },
+      },
     });
-    return { id: favId };
+    return response;
   } catch (error) {
     throw error;
   }
@@ -50,11 +55,16 @@ export const updateFavoriteListService = async (
 ): Promise<ICreateFavoriteResponse> => {
   try {
     const { id: newItemId } = await createItemService(item);
-    const { id } = await prisma.fav.update({
+    const response = await prisma.fav.update({
       where: { name: categoryName },
       data: { items: { connect: { id: newItemId } } },
+      select: {
+        id: true,
+        name: true,
+        items: { select: { id: true, title: true, description: true, link: true, category: true } },
+      },
     });
-    return { id };
+    return response;
   } catch (error) {
     throw error;
   }

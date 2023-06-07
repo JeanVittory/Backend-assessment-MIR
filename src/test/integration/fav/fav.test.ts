@@ -1,12 +1,16 @@
 import { Backoffice } from '@config/Backoffice.config';
 import { Server } from 'http';
 import { favs, auth } from '@config/constants/rootRoutes.constants';
-import { GET_ALL_USERS_FAVORITES } from '@routes/endpoints/favs.endpoints';
+import {
+  GET_ALL_USERS_FAVORITES,
+  POST_FAVORITE_LIST,
+  GET_SINGLE_FAVORITE_LIST,
+} from '@routes/endpoints/favs.endpoints';
 import {
   register as registerEndpoint,
   authentication as authenticationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
-import { newItem } from './mock';
+import { newItem, arrayOfNewItems } from './mock';
 import { userToRegister, login } from '../auth/mock';
 import { handleFavoriteList } from '@services/favorites/fav.service';
 import resetDB from '@database/test/reset';
@@ -40,6 +44,7 @@ describe('Tests favs endpoints', () => {
       logger.error(error);
     }
   });
+
   describe(`GET: ${favs}${GET_ALL_USERS_FAVORITES}`, () => {
     describe('Tests that should respond with something if everything goes well', () => {
       let ACCESS_TOKEN: string;
@@ -107,6 +112,178 @@ describe('Tests favs endpoints', () => {
         const expectedKeys = ['id', 'title', 'description', 'link'];
         const actualKeys = Object.keys(body.favs[0].items[0]);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+      });
+    });
+
+    describe('Tests that should respond with something if there is an error on the process', () => {
+      let ACCESS_TOKEN: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with a 403 status code if the user do not pass a token', async () => {
+        await Request(app).get(`${favs}${GET_ALL_USERS_FAVORITES}`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).get(`${favs}${GET_ALL_USERS_FAVORITES}`);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).get(`${favs}${GET_ALL_USERS_FAVORITES}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).get(`${favs}${GET_ALL_USERS_FAVORITES}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+    });
+  });
+
+  describe(`POST: ${favs}${POST_FAVORITE_LIST}`, () => {
+    describe('Tests that should respond with something if everything goes well', () => {
+      let ACCESS_TOKEN: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with a 201 status code if the new item war successfully created', async () => {
+        await Request(app)
+          .post(`${favs}${POST_FAVORITE_LIST}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(newItem)
+          .expect(201);
+      });
+
+      it('Should respond with an object as response if the process was succesfully', async () => {
+        const { body } = await Request(app)
+          .post(`${favs}${POST_FAVORITE_LIST}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(newItem);
+
+        expect(typeof body).toEqual('object');
+      });
+
+      it('Should contain the keys "id", "name" and "items" into the object of response', async () => {
+        const { body } = await Request(app)
+          .post(`${favs}${POST_FAVORITE_LIST}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(newItem);
+
+        const expectedKeys = ['id', 'name', 'items'];
+        const actualKeys = Object.keys(body);
+        expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+      });
+
+      it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
+        const { body } = await Request(app)
+          .post(`${favs}${POST_FAVORITE_LIST}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(newItem);
+        const expectedKeys = ['id', 'title', 'description', 'link', 'category'];
+        const actualKeys = Object.keys(body.items[0]);
+        expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
+      });
+
+      it('Should contain 2 items added in the items property of the object at response', async () => {
+        let counter = 1;
+        for (let item of arrayOfNewItems) {
+          const { body } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(item);
+          expect(body.items).toHaveLength(counter);
+          counter += 1;
+        }
+      });
+    });
+
+    describe('Tests that should respond with something if there is an error on process', () => {
+      let ACCESS_TOKEN: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with a 403 status code if the user do not pass a token', async () => {
+        await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).expect(403).send(newItem);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).send(newItem);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
       });
     });
   });
