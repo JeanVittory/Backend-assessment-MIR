@@ -53,8 +53,8 @@ export const singleFavoriteList = async (req: Request, res: Response, next: Next
 
 export const removeFavoriteList = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
-    const idRemoved = await deleteSingleFavoriteListService(id);
+    const { id: listId } = req.params;
+    const idRemoved = await deleteSingleFavoriteListService(listId);
     res.status(200).json(idRemoved);
   } catch (error) {
     if (error instanceof PrismaError) {

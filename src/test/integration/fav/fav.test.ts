@@ -191,7 +191,7 @@ describe('Tests favs endpoints', () => {
         }
       });
 
-      it('Should respond with a 201 status code if the new item war successfully created', async () => {
+      it('Should respond with a 201 status code if the new item was successfully created', async () => {
         await Request(app)
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
@@ -423,6 +423,134 @@ describe('Tests favs endpoints', () => {
 
       it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
         const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+    });
+  });
+  describe(`DELETE: ${favs}${DELETE_FAVORITE_LIST}`, () => {
+    describe('Tests that should respond with something if everything goes well', () => {
+      let ACCESS_TOKEN: string;
+      let listId: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          listId = postListResponse.id;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with 200 status code if the deletion was successfully', async () => {
+        await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
+      });
+
+      it('Should respond with an application/json format if everything goes well with the deletion', async () => {
+        await Request(app)
+          .delete(`${favs}/${listId}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .expect('Content-Type', /Application\/json/i);
+      });
+
+      it('Should respond with an object if everything goes well with the deletion', async () => {
+        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        expect(typeof body).toBe('object');
+      });
+
+      it('Should respond with an object that should only contain a property with the id of the list deleted', async () => {
+        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        const properties = Object.keys(body);
+        expect(properties).toHaveLength(1);
+        expect(properties[0]).toBe('id');
+      });
+
+      it('Should respond with an object that should only contain a property with the id of the list deleted and this property must be a string', async () => {
+        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        const properties = Object.values(body);
+        expect(properties).toHaveLength(1);
+        expect(typeof properties[0]).toBe('string');
+      });
+    });
+
+    describe('Test that should respond with something if there is an error on proccess', () => {
+      let ACCESS_TOKEN: string;
+      let listId: string;
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          listId = postListResponse.id;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      it('Should respond with a 404 status code if the list ID provided do not exist at DB', async () => {
+        await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
+      });
+      it('Should respond with a "Not Found" message if the list ID provided do not exist at DB', async () => {
+        const { body } = await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+        expect(body).toMatch(/Not Found/i);
+      });
+
+      it('Should respond with a 403 status code if the user do not pass a token', async () => {
+        await Request(app).delete(`${favs}/${listId}`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).delete(`${favs}/${listId}`).expect(403);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
         expect(body).toMatch(/Authorization denied./i);
       });
     });

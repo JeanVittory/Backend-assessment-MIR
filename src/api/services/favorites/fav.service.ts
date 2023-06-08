@@ -109,10 +109,10 @@ export const deleteSingleFavoriteListService = async (listId: string) => {
     });
     return { id };
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      throw new PrismaError(error.message, 400);
-    }
     logger.error(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+      throw new PrismaError(error.message, 404);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
     throw ApiError.Internal('Something went wrong');
   }
 };
