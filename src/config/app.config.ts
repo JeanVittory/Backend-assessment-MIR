@@ -25,8 +25,10 @@ export class Server {
 
   async start(): Promise<http.Server> {
     return new Promise((resolve) => {
-      this.cron = restartUsers();
-      if (process.env.NODE_ENV !== 'test') this.cron.start();
+      if (process.env.NODE_ENV !== 'test') {
+        this.cron = restartUsers();
+        this.cron.start();
+      }
       this.httpServer = this.express.listen(this.port, () => {
         logger.info(`Server running on port ${this.port}`);
         resolve(this.httpServer);

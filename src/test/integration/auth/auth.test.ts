@@ -20,10 +20,11 @@ import logger from '@config/logger/logger.config';
 
 describe('Tests Auth endpoints', () => {
   let app: Server;
-
+  let backoffice: Backoffice;
   beforeAll(async () => {
     try {
-      app = await new Backoffice().start();
+      backoffice = new Backoffice();
+      app = await backoffice.start();
     } catch (error) {
       logger.error(error);
     }
@@ -37,8 +38,8 @@ describe('Tests Auth endpoints', () => {
     }
   });
 
-  afterAll(() => {
-    app.close();
+  afterAll(async () => {
+    await backoffice.stop();
   });
 
   describe(`POST: ${auth}${registerEndpoint}`, () => {
