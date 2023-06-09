@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import prisma from '../../database/client';
 import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 import { ICreateFavoriteParams } from '@interfaces/CreateFavoriteParams.interface';
+import { IItemList } from '@interfaces/ItemList.interface';
 import { INewItem } from '@interfaces/NewItem.interface';
 import { createItemService } from '@services/item/item.service';
 import { getAllUserFavoritesService } from '@services/users/users.service';
@@ -108,6 +109,28 @@ export const deleteSingleFavoriteListService = async (listId: string) => {
       },
     });
     return { id };
+  } catch (error) {
+    logger.error(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+      throw new PrismaError(error.message, 404);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
+    throw ApiError.Internal('Something went wrong');
+  }
+};
+
+export const deleteSingleFavoriteItemService = async (listID: string, itemID: string) => {
+  try {
+    return await prisma.fav.update({
+      where: {
+        id: listID,
+      },
+      data: { items: { delete: { id: itemID } } },
+      select: {
+        id: true,
+        name: true,
+        items: true,
+      },
+    });
   } catch (error) {
     logger.error(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')

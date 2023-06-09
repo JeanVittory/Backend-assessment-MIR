@@ -6,6 +6,7 @@ import {
   POST_FAVORITE_LIST,
   GET_SINGLE_FAVORITE_LIST,
   DELETE_FAVORITE_LIST,
+  DELETE_FAVORITE_ITEM,
 } from '@routes/endpoints/favs.endpoints';
 import {
   register as registerEndpoint,
@@ -17,6 +18,8 @@ import { handleFavoriteList } from '@services/favorites/fav.service';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
 import logger from '@config/logger/logger.config';
+import { ICreateItemResponse } from '@interfaces/CreateItemResponse.interface';
+import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 
 describe('Tests favs endpoints', () => {
   let app: Server;
@@ -551,6 +554,155 @@ describe('Tests favs endpoints', () => {
 
       it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
         const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+    });
+  });
+
+  describe(`DELETE: ${favs}${DELETE_FAVORITE_ITEM}`, () => {
+    describe('Tests that should respond with something if everything goes well', () => {
+      let ACCESS_TOKEN: string;
+      let itemToBeDeleted: { listID: string; itemID: string };
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          itemToBeDeleted = {
+            listID: postListResponse.id,
+            itemID: postListResponse.items[0].id,
+          };
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with a 200 status code if the item was succesfully deleted', async () => {
+        await Request(app)
+          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(itemToBeDeleted)
+          .expect(200);
+      });
+
+      it('Should respond with an application/json format if the request goes well', async () => {
+        await Request(app)
+          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(itemToBeDeleted)
+          .expect('Content-Type', /Application\/json/i);
+      });
+
+      it('Should respond with an empty array into the items property if the item was succesfully deleted', async () => {
+        const expectedLength = 0;
+        const { body } = await Request(app)
+          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(itemToBeDeleted);
+
+        expect(Array.isArray(body.items)).toBe(true);
+        expect(body.items).toHaveLength(expectedLength);
+      });
+
+      it('Should respond with an array of two elements into the items property if the request of deletion is successfully', async () => {
+        const expectedLength = 2;
+        for (let item of arrayOfNewItems) {
+          await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(item);
+        }
+
+        const { body } = await Request(app)
+          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send(itemToBeDeleted);
+        expect(body.items).toHaveLength(expectedLength);
+      });
+    });
+
+    describe('Tests that should respond with somethin if there is an error on the request', () => {
+      let ACCESS_TOKEN: string;
+      let itemToBeDeleted: { listID: string; itemID: string };
+      beforeEach(async () => {
+        try {
+          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+          ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { body: postListResponse } = await Request(app)
+            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .send(newItem);
+          itemToBeDeleted = {
+            listID: postListResponse.id,
+            itemID: postListResponse.items[0].id,
+          };
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      it('Should respond with a 400 status code and a "Bad Request" message if the user do not provide a listID and an itemID', async () => {
+        const { statusCode, body } = await Request(app)
+          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+          .send('');
+        expect(statusCode).toBe(400);
+        expect(body).toMatch(/Bad request./i);
+      });
+
+      it('Should respond with a 403 status code if the user do not pass a token', async () => {
+        await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+        const { body } = await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
+        expect(body).toMatch(/Authorization denied./i);
+      });
+
+      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+        await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).set('Authorization', `Bearer 123`).expect(403);
+      });
+
+      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+        const { body } = await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).set('Authorization', `Bearer 123`);
         expect(body).toMatch(/Authorization denied./i);
       });
     });

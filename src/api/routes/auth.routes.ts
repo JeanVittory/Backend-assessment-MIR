@@ -5,9 +5,9 @@ import {
   authentication as autheticationEndpoint,
   authorization as authorizationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
-import validateAuthenticationRequest from '@middlewares/validateAuthorizationRequest.middlewares';
+import validateAuthenticationRequest from '@middlewares/validateAuthenticationRequest.middlewares';
 import isAuthenticated from '@middlewares/isAuthenticated.middleware';
-import validateRegisterRequest from '@middlewares/validateRegister.middleware';
+import validateRegisterRequest from '@middlewares/validateRegisterRequest.middleware';
 
 const authRouter = Router();
 
