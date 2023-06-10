@@ -8,7 +8,6 @@ import {
   deleteSingleFavoriteItemService,
 } from '@services/favorites/fav.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
-import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 
 export const allUserFavorites = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

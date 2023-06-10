@@ -2,14 +2,13 @@ import { Prisma } from '@prisma/client';
 import prisma from '../../database/client';
 import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 import { ICreateFavoriteParams } from '@interfaces/CreateFavoriteParams.interface';
-import { IItemList } from '@interfaces/ItemList.interface';
 import { INewItem } from '@interfaces/NewItem.interface';
+import { IGetSingleFavoriteList } from '@interfaces/GetSingleFavoriteList.interface';
 import { createItemService } from '@services/item/item.service';
 import { getAllUserFavoritesService } from '@services/users/users.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
-import { IGetSingleFavoriteList } from '@interfaces/GetSingleFavoriteList.interface';
 
 export const handleFavoriteList = async (item: INewItem, email: string): Promise<ICreateFavoriteResponse> => {
   try {

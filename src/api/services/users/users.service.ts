@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import { IUser } from '@interfaces/User.interface';
 import { INewUser } from '@interfaces/NewUser.interface';
+import { IGetAllFavoritesUser } from '@interfaces/GetAllFavoritesUser.interface';
 import prisma from '../../database/client';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
@@ -40,12 +41,44 @@ export const getUserService = async (searchParam: string): Promise<IUser> => {
   }
 };
 
-export const getAllUserFavoritesService = async (email: string) => {
+export const getAllUserFavoritesService = async (email: string): Promise<IGetAllFavoritesUser> => {
   try {
     return await prisma.user.findFirstOrThrow({
       where: { email },
       select: {
-        favs: { select: { name: true, items: { select: { id: true, title: true, description: true, link: true } } } },
+        favs: {
+          select: {
+            id: true,
+            name: true,
+            items: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                year: true,
+                localization: true,
+                technique: true,
+                price: true,
+                Movements: { select: { id: true, name: true, origin: true, description: true } },
+                Artist: {
+                  select: {
+                    id: true,
+                    firstname: true,
+                    lastname: true,
+                    pseudonym: true,
+                    gender: true,
+                    birthdate: true,
+                    avatar: true,
+                    nationality: true,
+                    bio: true,
+                    death: true,
+                    price: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
   } catch (error) {

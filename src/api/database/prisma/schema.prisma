@@ -18,23 +18,71 @@ model User {
 }
 
 model Fav {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  user      User     @relation(fields: [userId], references: [id])
+  id        String    @id @default(uuid())
+  name      String    @unique
+  user      User      @relation(fields: [userId], references: [id])
   userId    String
-  items     Item[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  items     Artwork[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
-model Item {
-  id          String   @id @default(uuid())
-  title       String
+//model Item {
+//  id          String   @id @default(uuid())
+//  title       String
+//  description String
+//  link        String
+//  category    String
+//  createdAt   DateTime @default(now())
+//  updatedAt   DateTime @updatedAt
+//  fav         Fav?     @relation(fields: [favId], references: [id])
+//  favId       String?
+//}
+
+model Artist {
+  id          String    @id @default(uuid())
+  firstname   String
+  lastname    String
+  avatar      String
+  birthdate   DateTime
+  death       String    @default("Unknown")
+  pseudonym   String?
+  nationality String
+  gender      String
+  bio         String
+  price       Int
+  artworks    Artwork[]
+  movement    Movements @relation(fields: [movementsId], references: [id])
+  movementsId String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Artwork {
+  id           String    @id @default(uuid())
+  name         String
+  year         String
+  description  String
+  technique    String
+  localization Decimal[] @default([0, 0])
+  price        Int
+  Artist       Artist    @relation(fields: [artistId], references: [id])
+  artistId     String
+  Movements    Movements @relation(fields: [movementsId], references: [id])
+  movementsId  String
+  Fav          Fav?      @relation(fields: [favId], references: [id])
+  favId        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Movements {
+  id          String    @id @default(uuid())
+  name        String
   description String
-  link        String
-  category    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  fav         Fav?     @relation(fields: [favId], references: [id])
-  favId       String?
+  origin      String    @default("unknown")
+  Artists     Artist[]
+  Artworks    Artwork[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
