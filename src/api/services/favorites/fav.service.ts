@@ -36,15 +36,40 @@ export const createFavoriteListService = async ({
   email,
 }: ICreateFavoriteParams): Promise<ICreateFavoriteResponse> => {
   try {
-    const response = await prisma.fav.create({
+    return await prisma.fav.create({
       data: { name: category, items: { connect: { id } }, user: { connect: { email } } },
       select: {
         id: true,
         name: true,
-        items: { select: { id: true, title: true, description: true, link: true, category: true } },
+        items: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            year: true,
+            localization: true,
+            technique: true,
+            price: true,
+            Movements: { select: { id: true, name: true, origin: true, description: true } },
+            Artist: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                pseudonym: true,
+                gender: true,
+                birthdate: true,
+                avatar: true,
+                nationality: true,
+                bio: true,
+                death: true,
+                price: true,
+              },
+            },
+          },
+        },
       },
     });
-    return response;
   } catch (error) {
     throw error;
   }
@@ -56,16 +81,41 @@ export const updateFavoriteListService = async (
 ): Promise<ICreateFavoriteResponse> => {
   try {
     const { id: newItemId } = await createItemService(item);
-    const response = await prisma.fav.update({
+    return await prisma.fav.update({
       where: { name: categoryName },
       data: { items: { connect: { id: newItemId } } },
       select: {
         id: true,
         name: true,
-        items: { select: { id: true, title: true, description: true, link: true, category: true } },
+        items: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            year: true,
+            localization: true,
+            technique: true,
+            price: true,
+            Movements: { select: { id: true, name: true, origin: true, description: true } },
+            Artist: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                pseudonym: true,
+                gender: true,
+                birthdate: true,
+                avatar: true,
+                nationality: true,
+                bio: true,
+                death: true,
+                price: true,
+              },
+            },
+          },
+        },
       },
     });
-    return response;
   } catch (error) {
     throw error;
   }
@@ -83,10 +133,28 @@ export const getSingleFavoriteListService = async (email: string, listId: string
         items: {
           select: {
             id: true,
-            title: true,
-            category: true,
-            link: true,
+            name: true,
             description: true,
+            year: true,
+            localization: true,
+            technique: true,
+            price: true,
+            Movements: { select: { id: true, name: true, origin: true, description: true } },
+            Artist: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                pseudonym: true,
+                gender: true,
+                birthdate: true,
+                avatar: true,
+                nationality: true,
+                bio: true,
+                death: true,
+                price: true,
+              },
+            },
           },
         },
       },
