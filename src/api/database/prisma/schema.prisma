@@ -27,18 +27,6 @@ model Fav {
   updatedAt DateTime  @updatedAt
 }
 
-//model Item {
-//  id          String   @id @default(uuid())
-//  title       String
-//  description String
-//  link        String
-//  category    String
-//  createdAt   DateTime @default(now())
-//  updatedAt   DateTime @updatedAt
-//  fav         Fav?     @relation(fields: [favId], references: [id])
-//  favId       String?
-//}
-
 model Artist {
   id          String    @id @default(uuid())
   firstname   String
