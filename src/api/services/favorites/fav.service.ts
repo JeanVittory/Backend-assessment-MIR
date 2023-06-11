@@ -2,25 +2,26 @@ import { Prisma } from '@prisma/client';
 import prisma from '../../database/client';
 import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 import { ICreateFavoriteParams } from '@interfaces/CreateFavoriteParams.interface';
-import { INewItem } from '@interfaces/NewItem.interface';
+import { INewFavoriteArtwork } from '@interfaces/NewFavoriteArtwork.interface';
 import { IGetSingleFavoriteList } from '@interfaces/GetSingleFavoriteList.interface';
-import { createItemService } from '@services/item/item.service';
 import { getAllUserFavoritesService } from '@services/users/users.service';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
 
-export const handleFavoriteList = async (item: INewItem, email: string): Promise<ICreateFavoriteResponse> => {
+export const handleFavoriteList = async (
+  artwork: INewFavoriteArtwork,
+  email: string,
+): Promise<ICreateFavoriteResponse> => {
   try {
-    const { category } = item;
+    const { category, id } = artwork;
     const userFav = await getAllUserFavoritesService(email);
     const isFav = userFav.favs.find((fav) => fav.name === category);
     if (!isFav) {
-      const { id } = await createItemService(item);
       return await createFavoriteListService({ id, category, email });
     }
     const { name: categoryName } = isFav;
-    return updateFavoriteListService(categoryName, item);
+    return updateFavoriteListService(categoryName, id);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new PrismaError(error.message, 400);
@@ -50,8 +51,8 @@ export const createFavoriteListService = async ({
             localization: true,
             technique: true,
             price: true,
-            Movements: { select: { id: true, name: true, origin: true, description: true } },
-            Artist: {
+            movement: { select: { id: true, name: true, origin: true, description: true } },
+            artist: {
               select: {
                 id: true,
                 firstname: true,
@@ -77,13 +78,12 @@ export const createFavoriteListService = async ({
 
 export const updateFavoriteListService = async (
   categoryName: string,
-  item: INewItem,
+  artworkID: string,
 ): Promise<ICreateFavoriteResponse> => {
   try {
-    const { id: newItemId } = await createItemService(item);
     return await prisma.fav.update({
       where: { name: categoryName },
-      data: { items: { connect: { id: newItemId } } },
+      data: { items: { connect: { id: artworkID } } },
       select: {
         id: true,
         name: true,
@@ -96,8 +96,8 @@ export const updateFavoriteListService = async (
             localization: true,
             technique: true,
             price: true,
-            Movements: { select: { id: true, name: true, origin: true, description: true } },
-            Artist: {
+            movement: { select: { id: true, name: true, origin: true, description: true } },
+            artist: {
               select: {
                 id: true,
                 firstname: true,
@@ -139,8 +139,8 @@ export const getSingleFavoriteListService = async (email: string, listId: string
             localization: true,
             technique: true,
             price: true,
-            Movements: { select: { id: true, name: true, origin: true, description: true } },
-            Artist: {
+            movement: { select: { id: true, name: true, origin: true, description: true } },
+            artist: {
               select: {
                 id: true,
                 firstname: true,
@@ -185,7 +185,10 @@ export const deleteSingleFavoriteListService = async (listId: string) => {
   }
 };
 
-export const deleteSingleFavoriteItemService = async (listID: string, itemID: string) => {
+export const deleteSingleFavoriteItemService = async (
+  listID: string,
+  itemID: string,
+): Promise<IGetSingleFavoriteList> => {
   try {
     return await prisma.fav.update({
       where: {
@@ -195,7 +198,33 @@ export const deleteSingleFavoriteItemService = async (listID: string, itemID: st
       select: {
         id: true,
         name: true,
-        items: true,
+        items: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            year: true,
+            localization: true,
+            technique: true,
+            price: true,
+            movement: { select: { id: true, name: true, origin: true, description: true } },
+            artist: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                pseudonym: true,
+                gender: true,
+                birthdate: true,
+                avatar: true,
+                nationality: true,
+                bio: true,
+                death: true,
+                price: true,
+              },
+            },
+          },
+        },
       },
     });
   } catch (error) {

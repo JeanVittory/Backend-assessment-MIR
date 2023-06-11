@@ -1,5 +1,5 @@
 import { prismaMock } from '@database/test/singleton';
-import { createItemService } from '@services/item/item.service';
+import { createItemService } from '@services/artworks/artworks.service';
 import {
   createFavoriteListService,
   updateFavoriteListService,

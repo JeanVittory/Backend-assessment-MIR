@@ -1,6 +1,6 @@
 import { prismaMock } from '@database/test/singleton';
 import { item } from './mocks';
-import { createItemService } from '@services/item/item.service';
+import { createItemService } from '@services/artworks/artworks.service';
 
 describe('Test item service', () => {
   it('Should create and return an id of the item created', async () => {

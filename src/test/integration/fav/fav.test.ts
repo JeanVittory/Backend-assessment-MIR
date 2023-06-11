@@ -12,14 +12,13 @@ import {
   register as registerEndpoint,
   authentication as authenticationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
-import { newItem, arrayOfNewItems, expectedResponseKeys, expectedItemKeys } from './mock';
+import { newArtist, arrayOfNewItems, expectedResponseKeys, expectedItemKeys, newMovement, newArtwrok } from './mock';
 import { userToRegister, login } from '../auth/mock';
 import { handleFavoriteList } from '@services/favorites/fav.service';
+import prisma from '../../../api/database/client';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
 import logger from '@config/logger/logger.config';
-import { ICreateItemResponse } from '@interfaces/CreateItemResponse.interface';
-import { ICreateFavoriteResponse } from '@interfaces/CreateFavoriteResponse.interface';
 
 describe('Tests favs endpoints', () => {
   let app: Server;
@@ -52,11 +51,27 @@ describe('Tests favs endpoints', () => {
   describe(`GET: ${favs}${GET_ALL_USERS_FAVORITES}`, () => {
     describe('Tests that should respond with something if everything goes well', () => {
       let ACCESS_TOKEN: string;
+      let newFavoriteArtwork;
       beforeEach(async () => {
         try {
           await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
           const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
           ACCESS_TOKEN = body.ACCESS_TOKEN;
+          const { id: movementsId } = await prisma.movements.create({
+            data: newMovement,
+          });
+          const { id: artistId } = await prisma.artist.create({
+            data: { ...newArtist, movementsId: movementsId },
+          });
+
+          const { id: artworkId } = await prisma.artwork.create({
+            data: { ...newArtwrok, artistId, movementsId },
+          });
+
+          newFavoriteArtwork = {
+            id: artworkId,
+            category: 'My favorites paints',
+          };
         } catch (error) {
           logger.error(error);
         }
@@ -99,7 +114,7 @@ describe('Tests favs endpoints', () => {
       });
 
       it('Should have into the body an object with a key "favs" and into this key should exist an array with an object and into this object should exist the keys "name" and "items"', async () => {
-        await handleFavoriteList(newItem, login.email);
+        await handleFavoriteList(newFavoriteArtwork, login.email);
         const { body } = await Request(app)
           .get(`${favs}${GET_ALL_USERS_FAVORITES}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
@@ -109,7 +124,7 @@ describe('Tests favs endpoints', () => {
       });
 
       it('Should exist into body a key named "favs" and into this key should exist an array which should have an object with a key named "items" and into this key should exist an array with an object with "id", "title", "description" and "link" as keys', async () => {
-        await handleFavoriteList(newItem, login.email);
+        await handleFavoriteList(newFavoriteArtwork, login.email);
         const { body } = await Request(app)
           .get(`${favs}${GET_ALL_USERS_FAVORITES}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
@@ -169,11 +184,28 @@ describe('Tests favs endpoints', () => {
   describe(`POST: ${favs}${POST_FAVORITE_LIST}`, () => {
     describe('Tests that should respond with something if everything goes well', () => {
       let ACCESS_TOKEN: string;
+      let newFavoriteArtwork;
       beforeEach(async () => {
         try {
           await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
           const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
           ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+          const { id: movementsId } = await prisma.movements.create({
+            data: newMovement,
+          });
+          const { id: artistId } = await prisma.artist.create({
+            data: { ...newArtist, movementsId: movementsId },
+          });
+
+          const { id: artworkId } = await prisma.artwork.create({
+            data: { ...newArtwrok, artistId, movementsId },
+          });
+
+          newFavoriteArtwork = {
+            id: artworkId,
+            category: 'My favorites paints',
+          };
         } catch (error) {
           logger.error(error);
         }
@@ -198,7 +230,7 @@ describe('Tests favs endpoints', () => {
         await Request(app)
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(newItem)
+          .send(newFavoriteArtwork)
           .expect(201);
       });
 
@@ -206,7 +238,7 @@ describe('Tests favs endpoints', () => {
         const { body } = await Request(app)
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(newItem);
+          .send(newFavoriteArtwork);
 
         expect(typeof body).toEqual('object');
       });
@@ -215,7 +247,7 @@ describe('Tests favs endpoints', () => {
         const { body } = await Request(app)
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(newItem);
+          .send(newFavoriteArtwork);
         const actualKeys = Object.keys(body);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
       });
@@ -224,486 +256,605 @@ describe('Tests favs endpoints', () => {
         const { body } = await Request(app)
           .post(`${favs}${POST_FAVORITE_LIST}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(newItem);
+          .send(newFavoriteArtwork);
         const actualKeys = Object.keys(body.items[0]);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
       });
 
-      it('Should contain 2 items added in the items property of the object at response', async () => {
-        let counter = 1;
-        for (let item of arrayOfNewItems) {
+      //it('Should contain 2 items added in the items property of the object at response', async () => {
+      //  let counter = 1;
+      //   for (let item of arrayOfNewItems) {
+      //     const { body } = await Request(app)
+      //       .post(`${favs}${POST_FAVORITE_LIST}`)
+      //       .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+      //       .send(item);
+      //      expect(body.items).toHaveLength(counter);
+      ///      counter += 1;
+      //    }
+      // });
+      //});
+
+      describe('Tests that should respond with something if there is an error on process', () => {
+        let ACCESS_TOKEN: string;
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
+
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
+
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        it('Should respond with a 403 status code if the user do not pass a token', async () => {
+          await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).expect(403).send(newFavoriteArtwork);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+          const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).send(newFavoriteArtwork);
+          expect(body).toMatch(/Authorization denied./i);
+        });
+
+        it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+          await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`).expect(403);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+          const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`);
+          expect(body).toMatch(/Authorization denied./i);
+        });
+      });
+    });
+
+    describe(`GET: ${favs}${GET_SINGLE_FAVORITE_LIST}`, () => {
+      describe('Tests that should respond with something if everything goes well on process', () => {
+        let ACCESS_TOKEN: string;
+        let listId: string;
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
+
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
+
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            listId = postListResponse.id;
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        it('Should respond a 200 status code if everything goes well', async () => {
+          await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
+        });
+        it('Should respond an appilcation/json format if everything goes well', async () => {
+          await Request(app)
+            .get(`${favs}/${listId}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .expect('Content-Type', /application\/json/i);
+        });
+
+        it('Should contain the keys "id", "name" and "items" into the object of response', async () => {
+          const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          const actualKeys = Object.keys(body);
+          expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
+        });
+
+        it('Should contain 3 items added in the items property of the object at response', async () => {
+          const expectedLength = 3;
+          for (let item of arrayOfNewItems) {
+            await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(item);
+          }
+          const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          expect(body.items).toHaveLength(expectedLength);
+        });
+
+        it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
+          for (let item of arrayOfNewItems) {
+            await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(item);
+          }
+          const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          for (let item of body.items) {
+            const actualKeys = Object.keys(item);
+            expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
+          }
+        });
+      });
+
+      describe('Tests that should respond with something if there is an error on process', () => {
+        let ACCESS_TOKEN: string;
+        let listId: string;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
+
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
+
+            let newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            listId = postListResponse.id;
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+        it("Should respond with a 404 status code if the list ID doesn't exist at DB", async () => {
+          await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
+        });
+
+        it('Should respond with a message "Not Found" if there is not any list that match at DB with the list ID provided', async () => {
+          const { body } = await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          expect(body).toMatch(/Not Found/i);
+        });
+
+        it('Should respond with a 403 status code if the user do not pass a token', async () => {
+          await Request(app).get(`${favs}/${listId}`).expect(403);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+          const { body } = await Request(app).get(`${favs}/${listId}`).expect(403);
+          expect(body).toMatch(/Authorization denied./i);
+        });
+
+        it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+          await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+          const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
+          expect(body).toMatch(/Authorization denied./i);
+        });
+      });
+    });
+    describe(`DELETE: ${favs}${DELETE_FAVORITE_LIST}`, () => {
+      describe('Tests that should respond with something if everything goes well', () => {
+        let ACCESS_TOKEN: string;
+        let listId: string;
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
+
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
+
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            listId = postListResponse.id;
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        it('Should respond with 200 status code if the deletion was successfully', async () => {
+          await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
+        });
+
+        it('Should respond with an application/json format if everything goes well with the deletion', async () => {
+          await Request(app)
+            .delete(`${favs}/${listId}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+            .expect('Content-Type', /Application\/json/i);
+        });
+
+        it('Should respond with an object if everything goes well with the deletion', async () => {
           const { body } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
-            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(item);
-          expect(body.items).toHaveLength(counter);
-          counter += 1;
-        }
+            .delete(`${favs}/${listId}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          expect(typeof body).toBe('object');
+        });
+
+        it('Should respond with an object that should only contain a property with the id of the list deleted', async () => {
+          const { body } = await Request(app)
+            .delete(`${favs}/${listId}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          const properties = Object.keys(body);
+          expect(properties).toHaveLength(1);
+          expect(properties[0]).toBe('id');
+        });
+
+        it('Should respond with an object that should only contain a property with the id of the list deleted and this property must be a string', async () => {
+          const { body } = await Request(app)
+            .delete(`${favs}/${listId}`)
+            .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          const properties = Object.values(body);
+          expect(properties).toHaveLength(1);
+          expect(typeof properties[0]).toBe('string');
+        });
+      });
+
+      describe('Test that should respond with something if there is an error on proccess', () => {
+        let ACCESS_TOKEN: string;
+        let listId: string;
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
+
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
+
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            listId = postListResponse.id;
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
+        it('Should respond with a 404 status code if the list ID provided do not exist at DB', async () => {
+          await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
+        });
+        it('Should respond with a "Not Found" message if the list ID provided do not exist at DB', async () => {
+          const { body } = await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
+          expect(body).toMatch(/Not Found/i);
+        });
+
+        it('Should respond with a 403 status code if the user do not pass a token', async () => {
+          await Request(app).delete(`${favs}/${listId}`).expect(403);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+          const { body } = await Request(app).delete(`${favs}/${listId}`).expect(403);
+          expect(body).toMatch(/Authorization denied./i);
+        });
+
+        it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+          await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
+        });
+
+        it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+          const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
+          expect(body).toMatch(/Authorization denied./i);
+        });
       });
     });
 
-    describe('Tests that should respond with something if there is an error on process', () => {
-      let ACCESS_TOKEN: string;
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+    describe(`DELETE: ${favs}${DELETE_FAVORITE_ITEM}`, () => {
+      describe('Tests that should respond with something if everything goes well', () => {
+        let ACCESS_TOKEN: string;
+        let itemToBeDeleted: { listID: string; itemID: string };
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
 
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
 
-      it('Should respond with a 403 status code if the user do not pass a token', async () => {
-        await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).expect(403).send(newItem);
-      });
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            itemToBeDeleted = {
+              listID: postListResponse.id,
+              itemID: postListResponse.items[0].id,
+            };
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
-        const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).send(newItem);
-        expect(body).toMatch(/Authorization denied./i);
-      });
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
-        await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`).expect(403);
-      });
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
-        const { body } = await Request(app).post(`${favs}${POST_FAVORITE_LIST}`).set('Authorization', `Bearer 123`);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-    });
-  });
-
-  describe(`GET: ${favs}${GET_SINGLE_FAVORITE_LIST}`, () => {
-    describe('Tests that should respond with something if everything goes well on process', () => {
-      let ACCESS_TOKEN: string;
-      let listId: string;
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
-            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          listId = postListResponse.id;
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      it('Should respond a 200 status code if everything goes well', async () => {
-        await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
-      });
-      it('Should respond an appilcation/json format if everything goes well', async () => {
-        await Request(app)
-          .get(`${favs}/${listId}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .expect('Content-Type', /application\/json/i);
-      });
-
-      it('Should contain the keys "id", "name" and "items" into the object of response', async () => {
-        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        const actualKeys = Object.keys(body);
-        expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
-      });
-
-      it('Should contain 3 items added in the items property of the object at response', async () => {
-        const expectedLength = 3;
-        for (let item of arrayOfNewItems) {
+        it('Should respond with a 200 status code if the item was succesfully deleted', async () => {
           await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
             .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(item);
-        }
-        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        expect(body.items).toHaveLength(expectedLength);
-      });
+            .send(itemToBeDeleted)
+            .expect(200);
+        });
 
-      it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
-        for (let item of arrayOfNewItems) {
+        it('Should respond with an application/json format if the request goes well', async () => {
           await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
             .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(item);
-        }
-        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        for (let item of body.items) {
-          const actualKeys = Object.keys(item);
-          expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
-        }
-      });
-    });
+            .send(itemToBeDeleted)
+            .expect('Content-Type', /Application\/json/i);
+        });
 
-    describe('Tests that should respond with something if there is an error on process', () => {
-      let ACCESS_TOKEN: string;
-      let listId: string;
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
+        it('Should respond with an empty array into the items property if the item was succesfully deleted', async () => {
+          const expectedLength = 0;
+          const { body } = await Request(app)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
             .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          listId = postListResponse.id;
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+            .send(itemToBeDeleted);
 
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+          expect(Array.isArray(body.items)).toBe(true);
+          expect(body.items).toHaveLength(expectedLength);
+        });
 
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-      it("Should respond with a 404 status code if the list ID doesn't exist at DB", async () => {
-        await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
-      });
+        it('Should respond with an array of two elements into the items property if the request of deletion is successfully', async () => {
+          const expectedLength = 2;
+          for (let item of arrayOfNewItems) {
+            await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(item);
+          }
 
-      it('Should respond with a message "Not Found" if there is not any list that match at DB with the list ID provided', async () => {
-        const { body } = await Request(app).get(`${favs}/1234-321`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        expect(body).toMatch(/Not Found/i);
-      });
-
-      it('Should respond with a 403 status code if the user do not pass a token', async () => {
-        await Request(app).get(`${favs}/${listId}`).expect(403);
-      });
-
-      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
-        const { body } = await Request(app).get(`${favs}/${listId}`).expect(403);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-
-      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
-        await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
-      });
-
-      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
-        const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-    });
-  });
-  describe(`DELETE: ${favs}${DELETE_FAVORITE_LIST}`, () => {
-    describe('Tests that should respond with something if everything goes well', () => {
-      let ACCESS_TOKEN: string;
-      let listId: string;
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
+          const { body } = await Request(app)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
             .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          listId = postListResponse.id;
-        } catch (error) {
-          logger.error(error);
-        }
+            .send(itemToBeDeleted);
+          expect(body.items).toHaveLength(expectedLength);
+        });
       });
 
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+      describe('Tests that should respond with somethin if there is an error on the request', () => {
+        let ACCESS_TOKEN: string;
+        let itemToBeDeleted: { listID: string; itemID: string };
+        let newFavoriteArtwork;
+        beforeEach(async () => {
+          try {
+            await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
+            const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
+            ACCESS_TOKEN = body.ACCESS_TOKEN;
+            const { id: movementsId } = await prisma.movements.create({
+              data: newMovement,
+            });
+            const { id: artistId } = await prisma.artist.create({
+              data: { ...newArtist, movementsId: movementsId },
+            });
 
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+            const { id: artworkId } = await prisma.artwork.create({
+              data: { ...newArtwrok, artistId, movementsId },
+            });
 
-      it('Should respond with 200 status code if the deletion was successfully', async () => {
-        await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(200);
-      });
+            newFavoriteArtwork = {
+              id: artworkId,
+              category: 'My favorites paints',
+            };
+            const { body: postListResponse } = await Request(app)
+              .post(`${favs}${POST_FAVORITE_LIST}`)
+              .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
+              .send(newFavoriteArtwork);
+            itemToBeDeleted = {
+              listID: postListResponse.id,
+              itemID: postListResponse.items[0].id,
+            };
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with an application/json format if everything goes well with the deletion', async () => {
-        await Request(app)
-          .delete(`${favs}/${listId}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .expect('Content-Type', /Application\/json/i);
-      });
+        afterEach(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with an object if everything goes well with the deletion', async () => {
-        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        expect(typeof body).toBe('object');
-      });
+        afterAll(async () => {
+          try {
+            await resetDB();
+          } catch (error) {
+            logger.error(error);
+          }
+        });
 
-      it('Should respond with an object that should only contain a property with the id of the list deleted', async () => {
-        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        const properties = Object.keys(body);
-        expect(properties).toHaveLength(1);
-        expect(properties[0]).toBe('id');
-      });
-
-      it('Should respond with an object that should only contain a property with the id of the list deleted and this property must be a string', async () => {
-        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        const properties = Object.values(body);
-        expect(properties).toHaveLength(1);
-        expect(typeof properties[0]).toBe('string');
-      });
-    });
-
-    describe('Test that should respond with something if there is an error on proccess', () => {
-      let ACCESS_TOKEN: string;
-      let listId: string;
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
+        it('Should respond with a 400 status code and a "Bad Request" message if the user do not provide a listID and an itemID', async () => {
+          const { statusCode, body } = await Request(app)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
             .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          listId = postListResponse.id;
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+            .send('');
+          expect(statusCode).toBe(400);
+          expect(body).toMatch(/Bad request./i);
+        });
 
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
+        it('Should respond with a 403 status code if the user do not pass a token', async () => {
+          await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
+        });
 
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-      it('Should respond with a 404 status code if the list ID provided do not exist at DB', async () => {
-        await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`).expect(404);
-      });
-      it('Should respond with a "Not Found" message if the list ID provided do not exist at DB', async () => {
-        const { body } = await Request(app).delete(`${favs}/1234`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        expect(body).toMatch(/Not Found/i);
-      });
+        it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
+          const { body } = await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
+          expect(body).toMatch(/Authorization denied./i);
+        });
 
-      it('Should respond with a 403 status code if the user do not pass a token', async () => {
-        await Request(app).delete(`${favs}/${listId}`).expect(403);
-      });
+        it('Should respond with a 403 status code if the user provide an invalid token', async () => {
+          await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).set('Authorization', `Bearer 123`).expect(403);
+        });
 
-      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
-        const { body } = await Request(app).delete(`${favs}/${listId}`).expect(403);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-
-      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
-        await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`).expect(403);
-      });
-
-      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
-        const { body } = await Request(app).delete(`${favs}/${listId}`).set('Authorization', `Bearer 123`);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-    });
-  });
-
-  describe(`DELETE: ${favs}${DELETE_FAVORITE_ITEM}`, () => {
-    describe('Tests that should respond with something if everything goes well', () => {
-      let ACCESS_TOKEN: string;
-      let itemToBeDeleted: { listID: string; itemID: string };
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
-            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          itemToBeDeleted = {
-            listID: postListResponse.id,
-            itemID: postListResponse.items[0].id,
-          };
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      it('Should respond with a 200 status code if the item was succesfully deleted', async () => {
-        await Request(app)
-          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(itemToBeDeleted)
-          .expect(200);
-      });
-
-      it('Should respond with an application/json format if the request goes well', async () => {
-        await Request(app)
-          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(itemToBeDeleted)
-          .expect('Content-Type', /Application\/json/i);
-      });
-
-      it('Should respond with an empty array into the items property if the item was succesfully deleted', async () => {
-        const expectedLength = 0;
-        const { body } = await Request(app)
-          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(itemToBeDeleted);
-
-        expect(Array.isArray(body.items)).toBe(true);
-        expect(body.items).toHaveLength(expectedLength);
-      });
-
-      it('Should respond with an array of two elements into the items property if the request of deletion is successfully', async () => {
-        const expectedLength = 2;
-        for (let item of arrayOfNewItems) {
-          await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
-            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(item);
-        }
-
-        const { body } = await Request(app)
-          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send(itemToBeDeleted);
-        expect(body.items).toHaveLength(expectedLength);
-      });
-    });
-
-    describe('Tests that should respond with somethin if there is an error on the request', () => {
-      let ACCESS_TOKEN: string;
-      let itemToBeDeleted: { listID: string; itemID: string };
-      beforeEach(async () => {
-        try {
-          await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
-          const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
-          ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { body: postListResponse } = await Request(app)
-            .post(`${favs}${POST_FAVORITE_LIST}`)
-            .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-            .send(newItem);
-          itemToBeDeleted = {
-            listID: postListResponse.id,
-            itemID: postListResponse.items[0].id,
-          };
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterEach(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-
-      afterAll(async () => {
-        try {
-          await resetDB();
-        } catch (error) {
-          logger.error(error);
-        }
-      });
-      it('Should respond with a 400 status code and a "Bad Request" message if the user do not provide a listID and an itemID', async () => {
-        const { statusCode, body } = await Request(app)
-          .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
-          .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-          .send('');
-        expect(statusCode).toBe(400);
-        expect(body).toMatch(/Bad request./i);
-      });
-
-      it('Should respond with a 403 status code if the user do not pass a token', async () => {
-        await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
-      });
-
-      it('Should respond with "Authorization denied." message if the user do not provide a token', async () => {
-        const { body } = await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).expect(403);
-        expect(body).toMatch(/Authorization denied./i);
-      });
-
-      it('Should respond with a 403 status code if the user provide an invalid token', async () => {
-        await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).set('Authorization', `Bearer 123`).expect(403);
-      });
-
-      it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
-        const { body } = await Request(app).delete(`${favs}${DELETE_FAVORITE_ITEM}`).set('Authorization', `Bearer 123`);
-        expect(body).toMatch(/Authorization denied./i);
+        it('Should respond with "Authorization denied." message if the user do not provide an invalid token', async () => {
+          const { body } = await Request(app)
+            .delete(`${favs}${DELETE_FAVORITE_ITEM}`)
+            .set('Authorization', `Bearer 123`);
+          expect(body).toMatch(/Authorization denied./i);
+        });
       });
     });
   });

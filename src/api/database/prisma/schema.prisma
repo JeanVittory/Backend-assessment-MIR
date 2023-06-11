@@ -40,37 +40,54 @@ model Artist {
   bio         String
   price       Int
   artworks    Artwork[]
-  movement    Movements @relation(fields: [movementsId], references: [id])
-  movementsId String
+  movement    Movement  @relation(fields: [movementId], references: [id])
+  movementId  String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
 
 model Artwork {
-  id           String    @id @default(uuid())
-  name         String
-  year         String
-  description  String
-  technique    String
-  localization Decimal[] @default([0, 0])
-  price        Int
-  Artist       Artist    @relation(fields: [artistId], references: [id])
-  artistId     String
-  Movements    Movements @relation(fields: [movementsId], references: [id])
-  movementsId  String
-  Fav          Fav?      @relation(fields: [favId], references: [id])
-  favId        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                String          @id @default(uuid())
+  name              String
+  year              String
+  description       String
+  technique         String
+  localization      Origins_artwork @relation(fields: [origins_artworkId], references: [id])
+  price             Int
+  artist            Artist          @relation(fields: [artistId], references: [id])
+  artistId          String
+  movement          Movement        @relation(fields: [movementId], references: [id])
+  movementId        String
+  fav               Fav?            @relation(fields: [favId], references: [id])
+  favId             String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  origins_artworkId String
 }
 
-model Movements {
-  id          String    @id @default(uuid())
-  name        String
-  description String
-  origin      String    @default("unknown")
-  Artists     Artist[]
-  Artworks    Artwork[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model Movement {
+  id                String          @id @default(uuid())
+  name              String
+  description       String
+  origin            Origin_movement @relation(fields: [origin_movementId], references: [id])
+  activity          Int[]
+  artists           Artist[]
+  artworks          Artwork[]
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  origin_movementId String
+}
+
+model Origin_movement {
+  id           String     @id @default(uuid())
+  localization Decimal[]
+  country      String
+  movements    Movement[]
+}
+
+model Origins_artwork {
+  id           String    @id @default(uuid())
+  localization Decimal[]
+  country      String
+  artwork      Artwork[]
 }

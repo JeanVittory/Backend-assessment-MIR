@@ -6,7 +6,7 @@ export interface ICreateFavoriteResponse {
   items: IFavorites[];
 }
 
-interface IFavorites extends Omit<Artwork, 'createdAt' | 'updatedAt' | 'favId' | 'movementsId' | 'artistId'> {
-  Movements: Omit<Movements, 'createdAt' | 'updatedAt'>;
-  Artist: Omit<Artist, 'createdAt' | 'updatedAt' | 'movementsId'>;
+interface IFavorites extends Omit<Artwork, 'createdAt' | 'updatedAt' | 'favId' | 'movementId' | 'artistId'> {
+  movement: Omit<Movements, 'createdAt' | 'updatedAt'>;
+  artist: Omit<Artist, 'createdAt' | 'updatedAt' | 'movementId'>;
 }
