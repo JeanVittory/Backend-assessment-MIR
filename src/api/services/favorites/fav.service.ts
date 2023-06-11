@@ -48,10 +48,18 @@ export const createFavoriteListService = async ({
             name: true,
             description: true,
             year: true,
-            localization: true,
+            localization: { select: { localization: true, country: true } },
             technique: true,
             price: true,
-            movement: { select: { id: true, name: true, origin: true, description: true } },
+            movement: {
+              select: {
+                id: true,
+                name: true,
+                origin: { select: { localization: true, country: true } },
+                description: true,
+                activity: true,
+              },
+            },
             artist: {
               select: {
                 id: true,
@@ -96,7 +104,15 @@ export const updateFavoriteListService = async (
             localization: true,
             technique: true,
             price: true,
-            movement: { select: { id: true, name: true, origin: true, description: true } },
+            movement: {
+              select: {
+                id: true,
+                name: true,
+                origin: { select: { localization: true, country: true } },
+                description: true,
+                activity: true,
+              },
+            },
             artist: {
               select: {
                 id: true,
@@ -139,7 +155,15 @@ export const getSingleFavoriteListService = async (email: string, listId: string
             localization: true,
             technique: true,
             price: true,
-            movement: { select: { id: true, name: true, origin: true, description: true } },
+            movement: {
+              select: {
+                id: true,
+                name: true,
+                origin: { select: { localization: true, country: true } },
+                description: true,
+                activity: true,
+              },
+            },
             artist: {
               select: {
                 id: true,
@@ -207,7 +231,15 @@ export const deleteSingleFavoriteItemService = async (
             localization: true,
             technique: true,
             price: true,
-            movement: { select: { id: true, name: true, origin: true, description: true } },
+            movement: {
+              select: {
+                id: true,
+                name: true,
+                origin: { select: { localization: true, country: true } },
+                description: true,
+                activity: true,
+              },
+            },
             artist: {
               select: {
                 id: true,

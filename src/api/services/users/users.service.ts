@@ -59,8 +59,16 @@ export const getAllUserFavoritesService = async (email: string): Promise<IGetAll
                 localization: true,
                 technique: true,
                 price: true,
-                Movements: { select: { id: true, name: true, origin: true, description: true } },
-                Artist: {
+                movement: {
+                  select: {
+                    id: true,
+                    name: true,
+                    origin: { select: { localization: true, country: true } },
+                    description: true,
+                    activity: true,
+                  },
+                },
+                artist: {
                   select: {
                     id: true,
                     firstname: true,
