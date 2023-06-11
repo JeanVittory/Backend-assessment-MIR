@@ -70,7 +70,7 @@ model Movement {
   name              String
   description       String
   origin            Origin_movement @relation(fields: [origin_movementId], references: [id])
-  activity          Int[]
+  activity          String[]
   artists           Artist[]
   artworks          Artwork[]
   createdAt         DateTime        @default(now())

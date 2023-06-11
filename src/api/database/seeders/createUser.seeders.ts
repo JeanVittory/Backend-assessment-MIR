@@ -8,7 +8,7 @@ async function createUser() {
   try {
     const userPasswordEncrypted = await encryptPassword(env.PASSWORD_TEST);
     await prisma.user.create({
-      data: { email: env.USER_TEST, password: userPasswordEncrypted },
+      data: { email: env.USER_EMAIL_TEST, password: userPasswordEncrypted, username: 'Seeder' },
     });
   } catch (error) {
     throw error;

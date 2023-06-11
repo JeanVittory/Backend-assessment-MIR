@@ -16,7 +16,7 @@
     "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate dev",
     "prisma:studio": "dotenv -e .env.development -- npx prisma studio",
     "prisma:reset": "dotenv -e .env.development -- npx prisma migrate reset",
-    "prisma:seeders": "dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createUser.seeders.ts"
+    "prisma:seeders": "dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createUser.seeders.ts && dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createMovement.seeders.ts && dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createArtist.seeders.ts && dotenv -e .env.development -- ts-node-dev ./src/api/database/seeders/createArtwork.seeders.ts"
   },
   "keywords": [],
   "author": "",
