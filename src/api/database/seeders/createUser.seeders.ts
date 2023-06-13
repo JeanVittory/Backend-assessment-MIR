@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function createUser() {
+export default async function createUser() {
   try {
     const userPasswordEncrypted = await encryptPassword(env.PASSWORD_TEST);
     await prisma.user.create({
@@ -15,4 +15,4 @@ async function createUser() {
   }
 }
 
-createUser();
+//createUser();

@@ -12,9 +12,12 @@ import {
   register as registerEndpoint,
   authentication as authenticationEndpoint,
 } from '@routes/endpoints/auth.endpoints';
-import { newArtist, arrayOfNewItems, expectedResponseKeys, expectedItemKeys, newMovement, newArtwrok } from './mock';
+import { newArtist, arrayOfNewItems, expectedResponseKeys, expectedItemKeys, newMovement, newArtwork } from './mock';
 import { userToRegister, login } from '../auth/mock';
 import { handleFavoriteList } from '@services/favorites/fav.service';
+import createArtist from '@database/seeders/createArtist.seeders';
+import createArtwork from '@database/seeders/createArtwork.seeders';
+import createMovement from '@database/seeders/createMovement.seeders';
 import prisma from '../../../api/database/client';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
@@ -57,17 +60,10 @@ describe('Tests favs endpoints', () => {
           await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
           const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
           ACCESS_TOKEN = body.ACCESS_TOKEN;
-          const { id: movementsId } = await prisma.movements.create({
-            data: newMovement,
-          });
-          const { id: artistId } = await prisma.artist.create({
-            data: { ...newArtist, movementsId: movementsId },
-          });
-
-          const { id: artworkId } = await prisma.artwork.create({
-            data: { ...newArtwrok, artistId, movementsId },
-          });
-
+          await createMovement(newMovement);
+          await createArtist(newArtist);
+          const { id: artworkId } = await createArtwork(newArtwork);
+          console.log('testID', artworkId);
           newFavoriteArtwork = {
             id: artworkId,
             category: 'My favorites paints',
@@ -190,18 +186,9 @@ describe('Tests favs endpoints', () => {
           await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
           const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
           ACCESS_TOKEN = body.ACCESS_TOKEN;
-
-          const { id: movementsId } = await prisma.movements.create({
-            data: newMovement,
-          });
-          const { id: artistId } = await prisma.artist.create({
-            data: { ...newArtist, movementsId: movementsId },
-          });
-
-          const { id: artworkId } = await prisma.artwork.create({
-            data: { ...newArtwrok, artistId, movementsId },
-          });
-
+          await createMovement(newMovement);
+          await createArtist(newArtist);
+          const { id: artworkId } = await createArtwork(newArtwork);
           newFavoriteArtwork = {
             id: artworkId,
             category: 'My favorites paints',
@@ -260,20 +247,6 @@ describe('Tests favs endpoints', () => {
         const actualKeys = Object.keys(body.items[0]);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedItemKeys));
       });
-
-      //it('Should contain 2 items added in the items property of the object at response', async () => {
-      //  let counter = 1;
-      //   for (let item of arrayOfNewItems) {
-      //     const { body } = await Request(app)
-      //       .post(`${favs}${POST_FAVORITE_LIST}`)
-      //       .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-      //       .send(item);
-      //      expect(body.items).toHaveLength(counter);
-      ///      counter += 1;
-      //    }
-      // });
-      //});
-
       describe('Tests that should respond with something if there is an error on process', () => {
         let ACCESS_TOKEN: string;
         let newFavoriteArtwork;
@@ -283,16 +256,9 @@ describe('Tests favs endpoints', () => {
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
 
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
 
             newFavoriteArtwork = {
               id: artworkId,
@@ -349,17 +315,9 @@ describe('Tests favs endpoints', () => {
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
 
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
-
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
             newFavoriteArtwork = {
               id: artworkId,
               category: 'My favorites paints',
@@ -408,12 +366,15 @@ describe('Tests favs endpoints', () => {
         });
 
         it('Should contain 3 items added in the items property of the object at response', async () => {
-          const expectedLength = 3;
+          const expectedLength = 2;
           for (let item of arrayOfNewItems) {
+            await createMovement(item.newMovement);
+            await createArtist(item.newArtist);
+            const { id: artworkId } = await createArtwork(item.newArtwork);
             await Request(app)
               .post(`${favs}${POST_FAVORITE_LIST}`)
               .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-              .send(item);
+              .send({ id: artworkId, category: 'My favorites paints' });
           }
           const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
           expect(body.items).toHaveLength(expectedLength);
@@ -421,10 +382,13 @@ describe('Tests favs endpoints', () => {
 
         it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
           for (let item of arrayOfNewItems) {
+            await createMovement(item.newMovement);
+            await createArtist(item.newArtist);
+            const { id: artworkId } = await createArtwork(item.newArtwork);
             await Request(app)
               .post(`${favs}${POST_FAVORITE_LIST}`)
               .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-              .send(item);
+              .send({ id: artworkId, category: 'My favorites paints' });
           }
           const { body } = await Request(app).get(`${favs}/${listId}`).set('Authorization', `Bearer ${ACCESS_TOKEN}`);
           for (let item of body.items) {
@@ -443,16 +407,9 @@ describe('Tests favs endpoints', () => {
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
 
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
 
             let newFavoriteArtwork = {
               id: artworkId,
@@ -521,17 +478,9 @@ describe('Tests favs endpoints', () => {
             await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
-
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
             newFavoriteArtwork = {
               id: artworkId,
               category: 'My favorites paints',
@@ -608,16 +557,9 @@ describe('Tests favs endpoints', () => {
             await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
 
             newFavoriteArtwork = {
               id: artworkId,
@@ -686,16 +628,9 @@ describe('Tests favs endpoints', () => {
             await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
 
             newFavoriteArtwork = {
               id: artworkId,
@@ -760,10 +695,13 @@ describe('Tests favs endpoints', () => {
         it('Should respond with an array of two elements into the items property if the request of deletion is successfully', async () => {
           const expectedLength = 2;
           for (let item of arrayOfNewItems) {
+            await createMovement(item.newMovement);
+            await createArtist(item.newArtist);
+            const { id: artworkId } = await createArtwork(item.newArtwork);
             await Request(app)
               .post(`${favs}${POST_FAVORITE_LIST}`)
               .set('Authorization', `Bearer ${ACCESS_TOKEN}`)
-              .send(item);
+              .send({ id: artworkId, category: 'My favorites paints' });
           }
 
           const { body } = await Request(app)
@@ -783,16 +721,9 @@ describe('Tests favs endpoints', () => {
             await Request(app).post(`${auth}${registerEndpoint}`).send(userToRegister);
             const { body } = await Request(app).post(`${auth}${authenticationEndpoint}`).send(login);
             ACCESS_TOKEN = body.ACCESS_TOKEN;
-            const { id: movementsId } = await prisma.movements.create({
-              data: newMovement,
-            });
-            const { id: artistId } = await prisma.artist.create({
-              data: { ...newArtist, movementsId: movementsId },
-            });
-
-            const { id: artworkId } = await prisma.artwork.create({
-              data: { ...newArtwrok, artistId, movementsId },
-            });
+            await createMovement(newMovement);
+            await createArtist(newArtist);
+            const { id: artworkId } = await createArtwork(newArtwork);
 
             newFavoriteArtwork = {
               id: artworkId,

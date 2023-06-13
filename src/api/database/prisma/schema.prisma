@@ -29,15 +29,15 @@ model Fav {
 
 model Artist {
   id          String    @id @default(uuid())
-  firstname   String
-  lastname    String
+  firstname   String    @unique
+  lastname    String    @unique
   avatar      String
   birthdate   DateTime
   death       String    @default("Unknown")
   pseudonym   String?
   nationality String
   gender      String
-  bio         String
+  bio         String    @unique
   price       Int
   artworks    Artwork[]
   movement    Movement  @relation(fields: [movementId], references: [id])
@@ -48,9 +48,9 @@ model Artist {
 
 model Artwork {
   id                String          @id @default(uuid())
-  name              String
+  name              String          @unique
   year              String
-  description       String
+  description       String          @unique
   technique         String
   localization      Origins_artwork @relation(fields: [origins_artworkId], references: [id])
   price             Int
@@ -67,15 +67,15 @@ model Artwork {
 
 model Movement {
   id                String          @id @default(uuid())
-  name              String
-  description       String
+  name              String          @unique
+  description       String          @unique
   origin            Origin_movement @relation(fields: [origin_movementId], references: [id])
+  origin_movementId String
   activity          String[]
   artists           Artist[]
   artworks          Artwork[]
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-  origin_movementId String
 }
 
 model Origin_movement {
