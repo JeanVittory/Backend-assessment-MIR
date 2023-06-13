@@ -18,7 +18,6 @@ import { handleFavoriteList } from '@services/favorites/fav.service';
 import createArtist from '@database/seeders/createArtist.seeders';
 import createArtwork from '@database/seeders/createArtwork.seeders';
 import createMovement from '@database/seeders/createMovement.seeders';
-import prisma from '../../../api/database/client';
 import resetDB from '@database/test/reset';
 import Request from 'supertest';
 import logger from '@config/logger/logger.config';
@@ -63,7 +62,6 @@ describe('Tests favs endpoints', () => {
           await createMovement(newMovement);
           await createArtist(newArtist);
           const { id: artworkId } = await createArtwork(newArtwork);
-          console.log('testID', artworkId);
           newFavoriteArtwork = {
             id: artworkId,
             category: 'My favorites paints',
@@ -124,7 +122,17 @@ describe('Tests favs endpoints', () => {
         const { body } = await Request(app)
           .get(`${favs}${GET_ALL_USERS_FAVORITES}`)
           .set('Authorization', `Bearer ${ACCESS_TOKEN}`);
-        const expectedKeys = ['id', 'title', 'description', 'link'];
+        const expectedKeys = [
+          'id',
+          'name',
+          'description',
+          'year',
+          'localization',
+          'technique',
+          'price',
+          'movement',
+          'artist',
+        ];
         const actualKeys = Object.keys(body.favs[0].items[0]);
         expect(actualKeys).toEqual(expect.arrayContaining(expectedKeys));
       });
@@ -365,7 +373,7 @@ describe('Tests favs endpoints', () => {
           expect(actualKeys).toEqual(expect.arrayContaining(expectedResponseKeys));
         });
 
-        it('Should contain 3 items added in the items property of the object at response', async () => {
+        it('Should contain 2 items added in the items property of the object at response', async () => {
           const expectedLength = 2;
           for (let item of arrayOfNewItems) {
             await createMovement(item.newMovement);
@@ -380,7 +388,7 @@ describe('Tests favs endpoints', () => {
           expect(body.items).toHaveLength(expectedLength);
         });
 
-        it('Should contain the keys "id", "title", "description", "link" and "category" into the key "items" of the object of response', async () => {
+        it('Should contain the keys "id", "name", "description", "year", "localization", "technique", "price", "movement" and "artist" into the key "items" of the object of response', async () => {
           for (let item of arrayOfNewItems) {
             await createMovement(item.newMovement);
             await createArtist(item.newArtist);
@@ -693,7 +701,7 @@ describe('Tests favs endpoints', () => {
         });
 
         it('Should respond with an array of two elements into the items property if the request of deletion is successfully', async () => {
-          const expectedLength = 2;
+          const expectedLength = 1;
           for (let item of arrayOfNewItems) {
             await createMovement(item.newMovement);
             await createArtist(item.newArtist);

@@ -1,6 +1,6 @@
-import prisma from '../../database/client';
 import { INewArtwork } from '@interfaces/NewArtwork.interface';
 import logger from '../../../config/logger/logger.config';
+import prisma from '../client';
 
 const newArtwork = {
   name: 'The Creation of Adam',
@@ -56,14 +56,11 @@ export default async function createArtwork({
           movement: { connect: { id: movementId } },
         },
       });
-      console.log('resultado', id);
       return { id };
     });
   } catch (error) {
-    console.log('seeder', error);
     logger.error(error);
     return error;
   }
 }
-
-//createArtwork(newArtwork);
+createArtwork(newArtwork);

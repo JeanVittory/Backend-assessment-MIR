@@ -1,8 +1,6 @@
 import encryptPassword from '../../utils/passwordEncryption.utils';
 import env from '../../../config/env.config';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import prisma from '../client';
 
 export default async function createUser() {
   try {

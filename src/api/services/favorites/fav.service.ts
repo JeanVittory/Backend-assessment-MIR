@@ -23,7 +23,6 @@ export const handleFavoriteList = async (
     const { name: categoryName } = isFav;
     return updateFavoriteListService(categoryName, id);
   } catch (error) {
-    console.log(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new PrismaError(error.message, 400);
     }
@@ -37,7 +36,6 @@ export const createFavoriteListService = async ({
   category,
   email,
 }: ICreateFavoriteParams): Promise<ICreateFavoriteResponse> => {
-  console.log(id);
   try {
     return await prisma.fav.create({
       data: { name: category, items: { connect: { id } }, user: { connect: { email } } },

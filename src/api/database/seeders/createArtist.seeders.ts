@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { INewArtist } from '@interfaces/NewArtist.interface';
 import logger from '../../../config/logger/logger.config';
-
-const prisma = new PrismaClient();
+import prisma from '../client';
 
 const artist = {
   firstname: 'Miguel Angel',
@@ -30,7 +29,6 @@ export default async function createArtist({
   price,
 }: INewArtist): Promise<{ id: string }> {
   try {
-    console.log(movement);
     return await prisma.$transaction(async (tx) => {
       const { id: movementId } = await tx.movement.findFirstOrThrow({
         where: { name: movement },
@@ -54,10 +52,9 @@ export default async function createArtist({
       return { id };
     });
   } catch (error) {
-    console.log('artist seeder', error);
     logger.error(error);
     return error;
   }
 }
 
-//createArtist(artist);
+createArtist(artist);

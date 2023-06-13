@@ -40,7 +40,7 @@ model Artist {
   bio         String    @unique
   price       Int
   artworks    Artwork[]
-  movement    Movement  @relation(fields: [movementId], references: [id])
+  movement    Movement  @relation(fields: [movementId], references: [id], onDelete: Cascade)
   movementId  String
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt

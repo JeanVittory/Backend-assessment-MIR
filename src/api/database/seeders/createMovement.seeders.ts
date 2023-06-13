@@ -1,8 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { INewMovement } from '@interfaces/NewMovement.interface';
 import logger from '../../../config/logger/logger.config';
-
-const prisma = new PrismaClient();
+import prisma from '../client';
 
 const movement = {
   name: 'Renaissance',
@@ -40,10 +39,9 @@ export default async function createMovement({
       return { id };
     });
   } catch (error) {
-    console.log('movement', error);
     logger.error(error);
     return error;
   }
 }
 
-//createMovement(movement);
+createMovement(movement);
