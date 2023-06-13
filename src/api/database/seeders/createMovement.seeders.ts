@@ -40,7 +40,7 @@ export default async function createMovement({
     });
   } catch (error) {
     logger.error(error);
-    return error;
+    throw error;
   }
 }
 

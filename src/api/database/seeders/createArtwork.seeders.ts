@@ -26,6 +26,7 @@ export default async function createArtwork({
   price,
 }: INewArtwork): Promise<{ id: string }> {
   try {
+    console.group(movement);
     return await prisma.$transaction(async (tx) => {
       const { id: movementId } = await tx.movement.findFirstOrThrow({
         where: { name: movement },
@@ -60,7 +61,7 @@ export default async function createArtwork({
     });
   } catch (error) {
     logger.error(error);
-    return error;
+    throw error;
   }
 }
 createArtwork(newArtwork);

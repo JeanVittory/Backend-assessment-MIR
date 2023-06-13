@@ -53,7 +53,7 @@ export default async function createArtist({
     });
   } catch (error) {
     logger.error(error);
-    return error;
+    throw error;
   }
 }
 

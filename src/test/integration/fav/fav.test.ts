@@ -1,6 +1,7 @@
 import { Backoffice } from '@config/Backoffice.config';
 import { Server } from 'http';
 import { favs, auth } from '@config/constants/rootRoutes.constants';
+import Request from 'supertest';
 import {
   GET_ALL_USERS_FAVORITES,
   POST_FAVORITE_LIST,
@@ -15,11 +16,10 @@ import {
 import { newArtist, arrayOfNewItems, expectedResponseKeys, expectedItemKeys, newMovement, newArtwork } from './mock';
 import { userToRegister, login } from '../auth/mock';
 import { handleFavoriteList } from '@services/favorites/fav.service';
-import createArtist from '@database/seeders/createArtist.seeders';
-import createArtwork from '@database/seeders/createArtwork.seeders';
-import createMovement from '@database/seeders/createMovement.seeders';
+import { createArtist } from '../functions';
+import { createArtwork } from '../functions';
+import { createMovement } from '../functions';
 import resetDB from '@database/test/reset';
-import Request from 'supertest';
 import logger from '@config/logger/logger.config';
 
 describe('Tests favs endpoints', () => {
