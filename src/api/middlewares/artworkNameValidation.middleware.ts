@@ -3,18 +3,16 @@ import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import logger from '@config/logger/logger.config';
 
 export const artworkNameValidation = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.query.artworkName) {
-    logger.error('The artwork name was undefined');
+  const { 'artwork-name': artworkName, 'artist-name': artistName, 'movement-name': movementName } = req.query;
+  if (!artworkName && !artistName && !movementName) {
+    logger.error('You should provide some search filter');
     return next(ApiError.BadRequest());
   }
-  const { artworkName } = req.query;
-  const artworkNameFormatted = String(artworkName)
-    .split('')
-    .map((letter) => {
-      if (letter === '-') return ' ';
-      return letter;
-    })
-    .join('');
-  req.query.artworkName = String(artworkNameFormatted).toLowerCase().replace('-', ' ');
+  for (let [key, value] of Object.entries(req.query)) {
+    req.query = {
+      ...req.query,
+      [key]: (value as string).replace(/-/g, ''),
+    };
+  }
   next();
 };

@@ -2,7 +2,7 @@ import { Backoffice } from '@config/Backoffice.config';
 import { Server } from 'http';
 import Request from 'supertest';
 import { artworks } from '@config/constants/rootRoutes.constants';
-import { GET_SINGLE_ARTWORK_BY_NAME } from '@routes/endpoints/artworks.endpoint';
+import { GET_SINGLE_ARTWORK_BY_QUERY_PARAM } from '@routes/endpoints/artworks.endpoint';
 import logger from '@config/logger/logger.config';
 import resetDB from '@database/test/reset';
 import { createMovement } from '../functions';
@@ -38,7 +38,7 @@ describe('Tests artworks', () => {
     }
   });
 
-  describe(`GET: ${artworks}${GET_SINGLE_ARTWORK_BY_NAME}`, () => {
+  describe(`GET: ${artworks}${GET_SINGLE_ARTWORK_BY_QUERY_PARAM}`, () => {
     describe('Tests that should respond with something if everything goes well', () => {
       beforeEach(async () => {
         try {
@@ -46,6 +46,7 @@ describe('Tests artworks', () => {
           await createArtist(newArtist);
           await createArtwork(newArtwork);
         } catch (error) {
+          console.log(error);
           logger.error(error);
         }
       });
@@ -66,16 +67,16 @@ describe('Tests artworks', () => {
       });
 
       it('Should respond with a 200 status code if the artwork was found it', async () => {
-        await Request(app).get(`${artworks}`).query({ artworkName: 'my-art' }).expect(200);
+        await Request(app).get(`${artworks}`).query({ 'artwork-name': 'my-art' }).expect(200);
       });
       it('Should respond with a application/json format if the everythinggoes well', async () => {
         await Request(app)
           .get(`${artworks}`)
-          .query({ artworkName: 'my-art' })
+          .query({ 'artwork-name': 'my-art' })
           .expect('Content-Type', /application\/json/i);
       });
       it('Should respond with the following structure', async () => {
-        const { body } = await Request(app).get(`${artworks}`).query({ artworkName: 'my-art' });
+        const { body } = await Request(app).get(`${artworks}`).query({ 'artwork-name': 'my-art' });
         expect(body).toStrictEqual({
           id: expect.any(String),
           name: 'my art',
@@ -135,7 +136,7 @@ describe('Tests artworks', () => {
       });
 
       it(`Should respond with a 404 status code and a "Not found." message if the request do not found any register`, async () => {
-        const { body } = await Request(app).get(`${artworks}`).query({ artworkName: 'hello' }).expect(404);
+        const { body } = await Request(app).get(`${artworks}`).query({ 'artwork-name': 'hello' }).expect(404);
         expect(body).toMatch(/Not found/i);
       });
     });

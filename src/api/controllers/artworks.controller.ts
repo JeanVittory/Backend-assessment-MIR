@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
+import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
 import { getArtworkByNameService } from '@services/artworks/artworks.service';
 
 export const getArtworkByName = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { artworkName } = req.query;
-    const artwork = await getArtworkByNameService(artworkName as string);
+    const { 'artwork-name': artworkName, 'artist-name': artistName, 'movement-name': movementName } = req.query;
+    const searchParams = { artworkName, artistName, movementName } as IArtworksFilters;
+    const artwork = await getArtworkByNameService(searchParams);
     res.status(200).json(artwork);
   } catch (error) {
     if (error instanceof PrismaError) {

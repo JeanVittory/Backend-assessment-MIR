@@ -4,8 +4,13 @@ import { Prisma } from '@prisma/client';
 import IGetArtwork from '@interfaces/GetArtwork.interface';
 import logger from '@config/logger/logger.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
+import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
 
-export const getArtworkByNameService = async (artworkName: string): Promise<IGetArtwork> => {
+export const getArtworkByNameService = async ({
+  artworkName,
+  artistName,
+  movementName,
+}: IArtworksFilters): Promise<IGetArtwork> => {
   try {
     return await prisma.artwork.findFirstOrThrow({
       where: { name: artworkName },
