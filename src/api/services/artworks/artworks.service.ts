@@ -9,11 +9,17 @@ import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
 export const getArtworkByNameService = async ({
   artworkName,
   artistName,
+  artistLastname,
   movementName,
-}: IArtworksFilters): Promise<IGetArtwork> => {
+}: IArtworksFilters): Promise<IGetArtwork[]> => {
   try {
-    return await prisma.artwork.findFirstOrThrow({
-      where: { name: artworkName },
+    return await prisma.artwork.findMany({
+      where: {
+        ...(artworkName && { name: { contains: artworkName } }),
+        ...(artistName && { artist: { firstname: { contains: artistName } } }),
+        ...(artistLastname && { artist: { lastname: { contains: artistLastname } } }),
+        ...(movementName && { movement: { name: { contains: movementName } } }),
+      },
       select: {
         id: true,
         name: true,

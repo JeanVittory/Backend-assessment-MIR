@@ -6,8 +6,13 @@ import { getArtworkByNameService } from '@services/artworks/artworks.service';
 
 export const getArtworkByName = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { 'artwork-name': artworkName, 'artist-name': artistName, 'movement-name': movementName } = req.query;
-    const searchParams = { artworkName, artistName, movementName } as IArtworksFilters;
+    const {
+      'artwork-name': artworkName,
+      'artist-name': artistName,
+      'movement-name': movementName,
+      'artist-lastname': artistLastname,
+    } = req.query;
+    const searchParams = { artworkName, artistName, movementName, artistLastname } as IArtworksFilters;
     const artwork = await getArtworkByNameService(searchParams);
     res.status(200).json(artwork);
   } catch (error) {
