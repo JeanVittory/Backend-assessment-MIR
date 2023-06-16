@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
-import { getArtworkByNameService } from '@services/artworks/artworks.service';
+import { getArtworksByFilterService, getAllArtworksService } from '@services/artworks/artworks.service';
 
-export const getArtworkByName = async (req: Request, res: Response, next: NextFunction) => {
+export const getArtworksByFilters = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       'artwork-name': artworkName,
@@ -13,8 +13,23 @@ export const getArtworkByName = async (req: Request, res: Response, next: NextFu
       'artist-lastname': artistLastname,
     } = req.query;
     const searchParams = { artworkName, artistName, movementName, artistLastname } as IArtworksFilters;
-    const artwork = await getArtworkByNameService(searchParams);
+    const artwork = await getArtworksByFilterService(searchParams);
+    if (!artwork.length) return res.status(404).json(artwork);
     res.status(200).json(artwork);
+  } catch (error) {
+    if (error instanceof PrismaError) {
+      if (error.status === 404) return next(ApiError.NotFound());
+      if (error.status === 400) return next(ApiError.Unauthorized());
+    }
+    return next(ApiError.Internal('Unknown Error'));
+  }
+};
+
+export const getAllArtworks = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const allArtworks = await getAllArtworksService();
+    if (!allArtworks.length) return res.status(404).json(allArtworks);
+    res.status(200).json(allArtworks);
   } catch (error) {
     if (error instanceof PrismaError) {
       if (error.status === 404) return next(ApiError.NotFound());

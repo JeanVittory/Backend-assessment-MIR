@@ -6,7 +6,7 @@ import logger from '@config/logger/logger.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
 
-export const getArtworkByNameService = async ({
+export const getArtworksByFilterService = async ({
   artworkName,
   artistName,
   artistLastname,
@@ -20,6 +20,67 @@ export const getArtworkByNameService = async ({
         ...(artistLastname && { artist: { lastname: { contains: artistLastname } } }),
         ...(movementName && { movement: { name: { contains: movementName } } }),
       },
+      select: {
+        id: true,
+        name: true,
+        artist: {
+          select: {
+            id: true,
+            firstname: true,
+            lastname: true,
+            avatar: true,
+            death: true,
+            nationality: true,
+            bio: true,
+            pseudonym: true,
+            price: true,
+            birthdate: true,
+            gender: true,
+            movement: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                activity: true,
+                origin: { select: { id: true, localization: true, country: true } },
+              },
+            },
+          },
+        },
+        description: true,
+        localization: {
+          select: {
+            id: true,
+            country: true,
+            localization: true,
+          },
+        },
+        price: true,
+        technique: true,
+        year: true,
+        movement: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            activity: true,
+            origin: { select: { id: true, localization: true, country: true } },
+          },
+        },
+      },
+    });
+  } catch (error) {
+    logger.error(error);
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
+      throw new PrismaError(error.message, 404);
+    if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
+    throw ApiError.Internal('Something went wrong');
+  }
+};
+
+export const getAllArtworksService = async (): Promise<IGetArtwork[]> => {
+  try {
+    return await prisma.artwork.findMany({
       select: {
         id: true,
         name: true,
