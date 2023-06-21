@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
-import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
+import { IArtworksFilters } from '@interfaces/ArtworksFilters.interface';
 import {
   getArtworksByFilterService,
   getAllArtworksService,

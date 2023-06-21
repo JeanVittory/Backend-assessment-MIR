@@ -1,4 +1,4 @@
-export interface IArtworksFilters {
+export default interface IArtworksFilters {
   artworkName?: string;
   artistName?: string;
   artistLastname?: string;

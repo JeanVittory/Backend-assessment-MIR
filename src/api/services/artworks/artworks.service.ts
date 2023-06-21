@@ -2,9 +2,9 @@ import prisma from '../../database/client';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import { Prisma } from '@prisma/client';
 import IGetArtwork from '@interfaces/GetArtwork.interface';
+import IArtworksFilters from '@interfaces/ArtworksFilters.interface';
 import logger from '@config/logger/logger.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
-import { IArtworksFilters } from '@interfaces/ArtwroksFilters.interface';
 
 export const getArtworksByFilterService = async ({
   artworkName,
