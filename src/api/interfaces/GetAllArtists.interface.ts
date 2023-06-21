@@ -2,7 +2,7 @@ import { Artist, Movement, Artwork, Origin_movement, Origins_artwork } from '@pr
 
 export default interface IGetAllArtists extends Omit<Artist, 'createdAt' | 'updatedAt' | 'movementId'> {
   movement: IMovement;
-  artworks: IArtworks;
+  artworks: IArtworks[];
 }
 
 interface IArtworks
