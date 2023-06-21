@@ -1,7 +1,6 @@
 import express from 'express';
 import * as http from 'http';
 import { ScheduledTask } from 'node-cron';
-import envConfig from './env.config';
 import middlewares from './middlewares.config';
 import routes from './routes.config';
 import errorHandler from './errorsHandler/errorHandler.config';

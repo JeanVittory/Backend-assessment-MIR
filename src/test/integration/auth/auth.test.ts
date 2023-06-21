@@ -52,7 +52,7 @@ describe('Tests Auth endpoints', () => {
         await Request(app)
           .post(`${auth}${registerEndpoint}`)
           .send(userToRegister)
-          .expect('Content-Type', /application\/json/);
+          .expect('Content-Type', /application\/json/i);
       });
 
       it('Should return an object as response if everything goes well', async () => {
