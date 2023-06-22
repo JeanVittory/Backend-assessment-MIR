@@ -100,7 +100,7 @@ describe('Tests artworks', () => {
             artist: {
               id: expect.any(String),
               firstname: 'Leonardo',
-              lastname: 'Da vinci',
+              lastname: 'Da Vinci',
               avatar: 'avatar.jpeg',
               death: '1564/02/18',
               nationality: 'Italian',
@@ -239,7 +239,7 @@ describe('Tests artworks', () => {
             artist: {
               id: expect.any(String),
               firstname: 'Leonardo',
-              lastname: 'Da vinci',
+              lastname: 'Da Vinci',
               avatar: 'avatar.jpeg',
               death: '1564/02/18',
               nationality: 'Italian',
@@ -340,7 +340,7 @@ describe('Tests artworks', () => {
           artist: {
             id: expect.any(String),
             firstname: 'Leonardo',
-            lastname: 'Da vinci',
+            lastname: 'Da Vinci',
             avatar: 'avatar.jpeg',
             death: '1564/02/18',
             nationality: 'Italian',

@@ -1,6 +1,6 @@
 export const newArtist = {
   firstname: 'Leonardo',
-  lastname: 'Da vinci',
+  lastname: 'Da Vinci',
   avatar: 'avatar.jpeg',
   bio: 'Lorem Ipsum,',
   birthdate: new Date('1475/6/3 GMT'),
