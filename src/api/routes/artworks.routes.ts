@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { GET_SINGLE_ARTWORK_BY_QUERY_PARAM, GET_ALL_ARTWORKS, GET_ARTWORK_BY_ID } from './endpoints/artworks.endpoint';
+import { GET_SINGLE_ARTWORK_BY_QUERY_PARAM, GET_ALL_ARTWORKS, GET_ARTWORK_BY_ID } from './endpoints/artworks.endpoints';
 import { artworkQueryValidation } from '@middlewares/artworkNameValidation.middleware';
-import { getArtworksByFilters, getAllArtworks, getArtworkById } from '@controllers/artworks.controller';
+import { getArtworksByFilters, getAllArtworks, getArtworkById } from '@controllers/artworks.controllers';
 
 const artworksRouter = Router();
 

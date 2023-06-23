@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { GET_ALL_ARTISTS, GET_ARTIST_BY_ID, GET_ARTIST_FILTERED_BY_NAME } from './endpoints/artists.endpoint';
-import { getAllArtists, getArtistById, getArtistByName } from '@controllers/artists.controller';
+import { getAllArtists, getArtistById, getArtistByName } from '@controllers/artists.controllers';
 import { artistNameValidator } from '@middlewares/artistNameValidator.middleware';
 
 const artistsRouter = Router();

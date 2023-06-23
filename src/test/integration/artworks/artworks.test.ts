@@ -6,7 +6,7 @@ import {
   GET_SINGLE_ARTWORK_BY_QUERY_PARAM,
   GET_ALL_ARTWORKS,
   GET_ARTWORK_BY_ID,
-} from '@routes/endpoints/artworks.endpoint';
+} from '@routes/endpoints/artworks.endpoints';
 import logger from '@config/logger/logger.config';
 import resetDB from '@database/test/reset';
 import { createMovement } from '../functions';
