@@ -39,6 +39,21 @@ export const getAllMovementsService = async (): Promise<IMovement[]> => {
           select: {
             id: true,
             name: true,
+            artist: {
+              select: {
+                id: true,
+                firstname: true,
+                lastname: true,
+                avatar: true,
+                death: true,
+                nationality: true,
+                bio: true,
+                pseudonym: true,
+                price: true,
+                birthdate: true,
+                gender: true,
+              },
+            },
             technique: true,
             year: true,
             description: true,
