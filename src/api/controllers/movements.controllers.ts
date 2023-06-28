@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
 import { getAllMovementsService, getMovementByFilterService } from '@services/movements/movements.service';
+import { IMovementFilters } from '@interfaces/GetMovementByFilter.interface';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
-import { IMovementFilters } from '@interfaces/GetMovementByFilter.interface';
 
 export const getAllMovements = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

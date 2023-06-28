@@ -5,6 +5,7 @@ import IGetArtwork from '@interfaces/GetArtwork.interface';
 import IArtworksFilters from '@interfaces/ArtworksFilters.interface';
 import logger from '@config/logger/logger.config';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
+import { cacheValueType, getRedis, setRedis } from '@config/redis/redis.config';
 
 export const getArtworksByFilterService = async ({
   artworkName,
@@ -139,9 +140,13 @@ export const getAllArtworksService = async (): Promise<IGetArtwork[]> => {
   }
 };
 
-export const getArtworkByIdService = async (id: string): Promise<IGetArtwork> => {
+export const getArtworkByIdService = async (id: string): Promise<IGetArtwork | cacheValueType> => {
   try {
-    return await prisma.artwork.findFirstOrThrow({
+    const redisKey = `artworksService__getArtworkByIdService__${id}`;
+    const cacheData = await getRedis(redisKey);
+    if (cacheData) return cacheData;
+
+    const artwork = await prisma.artwork.findFirstOrThrow({
       where: { id },
       select: {
         id: true,
@@ -192,6 +197,9 @@ export const getArtworkByIdService = async (id: string): Promise<IGetArtwork> =>
         },
       },
     });
+
+    await setRedis(redisKey, artwork, { expirationMs: 60000 });
+    return artwork;
   } catch (error) {
     logger.error(error);
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
