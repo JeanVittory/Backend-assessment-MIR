@@ -1,12 +1,15 @@
 import * as redis from 'redis';
 import envConfig from '@config/env.config';
+import { RedisErrorTracker } from '@config/errorsHandler/RedisErrorTracker.config';
 import logger from '@config/logger/logger.config';
 
 export type cacheValueType = Record<string, unknown> | boolean | string | null;
 
+let redisClient: redis.RedisClientType;
+
 const initRedis = async () => {
   try {
-    const redisClient = redis.createClient({
+    redisClient = redis.createClient({
       url: envConfig.REDIS_URL,
     });
     await redisClient.connect();
@@ -24,6 +27,10 @@ export const getRedis = async (key: string): Promise<cacheValueType> => {
     if (!valueCached) return null;
     return JSON.parse(valueCached);
   } catch (error) {
+    if (error.message.includes(RedisErrorTracker.InvalidPathname)) {
+      return null;
+    }
+    console.log('hello get', error);
     logger.error(error);
     throw error;
   }
@@ -41,7 +48,15 @@ export const setRedis = async (
       PX: options.expirationMs,
     });
   } catch (error) {
+    console.log('aqui set', error);
     logger.error(error);
     throw error;
+  }
+};
+
+export const closeRedis = async (): Promise<void> => {
+  if (redisClient) {
+    console.log('apaga');
+    await redisClient.quit();
   }
 };

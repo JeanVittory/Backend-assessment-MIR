@@ -18,6 +18,6 @@ export class Backoffice {
   }
 
   async stop() {
-    return this.server?.stop();
+    return await this.server?.stop();
   }
 }

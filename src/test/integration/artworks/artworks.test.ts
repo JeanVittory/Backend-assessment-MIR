@@ -13,6 +13,7 @@ import { createMovement } from '../functions';
 import { createArtwork } from '../functions';
 import { createArtist } from '../functions';
 import { newArtist, newArtwork, newMovement } from './mock';
+import { closeRedis } from '@config/redis/redis.config';
 
 describe('Tests artworks', () => {
   let app: Server;

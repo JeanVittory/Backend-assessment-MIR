@@ -7,6 +7,7 @@ import {
   getAllArtworksService,
   getArtworkByIdService,
 } from '@services/artworks/artworks.service';
+import { RedisErrorTracker } from '@config/errorsHandler/RedisErrorTracker.config';
 
 export const getArtworksByFilters = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -47,6 +48,7 @@ export const getArtworkById = async (req: Request, res: Response, next: NextFunc
   try {
     const { id } = req.params;
     const artwork = await getArtworkByIdService(id);
+    console.log(artwork);
     res.status(200).json(artwork);
   } catch (error) {
     if (error instanceof PrismaError) {

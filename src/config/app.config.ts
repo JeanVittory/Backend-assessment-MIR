@@ -6,6 +6,7 @@ import routes from './routes.config';
 import errorHandler from './errorsHandler/errorHandler.config';
 import logger from './logger/logger.config';
 import restartUsers from './cron.config';
+import { closeRedis } from './redis/redis.config';
 
 export class Server {
   private port: string;
@@ -44,9 +45,10 @@ export class Server {
   }
 
   async stop(): Promise<void> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (this.httpServer) {
         if (process.env.NODE_ENV !== 'test') this.cron.stop();
+        await closeRedis();
         this.httpServer.close((error) => {
           if (error) {
             return reject(error);

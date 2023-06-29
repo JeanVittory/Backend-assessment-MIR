@@ -12,7 +12,7 @@
     "migrate:integration": "dotenv -e .env.integration -- npx prisma migrate dev",
     "prisma:integration_studio": "dotenv -e .env.integration -- npx prisma studio",
     "prisma:reset_integration": "dotenv -e .env.integration -- npx prisma migrate reset",
-    "test:integration": "cross-env NODE_ENV=test dotenv -e .env.integration -- jest -i --testPathPattern=src/test/integration --detectOpenHandles",
+    "test:integration": "cross-env NODE_ENV=test dotenv -e .env.integration -- sh -c 'redis-server & jest -i --testPathPattern=src/test/integration --detectOpenHandles'",
     "coverage": "cross-env NODE_ENV=test dotenv -e .env.integration -- npx jest --runInBand --coverage",
     "format": "prettier --write \"src/**/*.ts\"",
     "prisma:migrate": "dotenv -e .env.development -- npx prisma migrate dev",

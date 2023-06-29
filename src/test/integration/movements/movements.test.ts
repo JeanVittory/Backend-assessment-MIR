@@ -8,7 +8,7 @@ import { createArtwork } from '../functions';
 import { createArtist } from '../functions';
 import { newArtist, newArtwork, newMovement } from './mock';
 import { movements } from '@config/constants/rootRoutes.constants';
-import { GET_ALL_MOVEMENTS, GET_MOVEMENT_BY_FILTER } from '@routes/endpoints/movements.endpoints';
+import { GET_ALL_MOVEMENTS, GET_MOVEMENT_BY_FILTER, GET_MOVEMENT_BY_ID } from '@routes/endpoints/movements.endpoints';
 
 describe('Tests movements', () => {
   let app: Server;
@@ -258,6 +258,41 @@ describe('Tests movements', () => {
       it('Should respond with a 404 status code and a "Not found" message if the filter do not match with anything at db', async () => {
         const { body } = await Request(app).get(`${movements}${GET_MOVEMENT_BY_FILTER}?movement=Pop-Art`).expect(404);
         expect(body).toMatch(/Not found./i);
+      });
+    });
+  });
+
+  describe(`GET: ${movements}${GET_MOVEMENT_BY_ID}`, () => {
+    describe('Tests that should respond with something if everything goes well', () => {
+      let movementId: string;
+      beforeEach(async () => {
+        try {
+          const { id } = await createMovement(newMovement);
+          await createArtist(newArtist);
+          await createArtwork(newArtwork);
+          movementId = id;
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+      afterEach(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      afterAll(async () => {
+        try {
+          await resetDB();
+        } catch (error) {
+          logger.error(error);
+        }
+      });
+
+      it('Should respond with a 200 status code if the request goes well and match by id a movement at db', async () => {
+        await Request(app).get(`${movements}/${movementId}`).expect(200);
       });
     });
   });

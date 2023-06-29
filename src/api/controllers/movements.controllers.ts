@@ -1,6 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError } from '@config/errorsHandler/ApiErrors.config';
-import { getAllMovementsService, getMovementByFilterService } from '@services/movements/movements.service';
+import {
+  getAllMovementsService,
+  getMovementByFilterService,
+  getMovementByIdService,
+} from '@services/movements/movements.service';
 import { IMovementFilters } from '@interfaces/GetMovementByFilter.interface';
 import PrismaError from '@config/errorsHandler/PrismaError.config';
 import logger from '@config/logger/logger.config';
@@ -29,6 +33,20 @@ export const getMovementByFilter = async (req: Request, res: Response, next: Nex
     const searchParams = { movement } as IMovementFilters;
     const movementFound = await getMovementByFilterService(searchParams);
     res.status(200).json(movementFound);
+  } catch (error) {
+    if (error instanceof PrismaError) {
+      if (error.status === 404) return next(ApiError.NotFound());
+      if (error.status === 400) return next(ApiError.Unauthorized());
+    }
+    return next(ApiError.Internal('Unknown Error'));
+  }
+};
+
+export const getMovementById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    const movement = await getMovementByIdService(id);
+    res.status(200).json(movement);
   } catch (error) {
     if (error instanceof PrismaError) {
       if (error.status === 404) return next(ApiError.NotFound());

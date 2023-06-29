@@ -205,6 +205,6 @@ export const getArtworkByIdService = async (id: string): Promise<IGetArtwork | c
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025')
       throw new PrismaError(error.message, 404);
     if (error instanceof Prisma.PrismaClientKnownRequestError) throw new PrismaError(error.message, 400);
-    throw ApiError.Internal('Something went wrong');
+    throw error;
   }
 };
